@@ -77,6 +77,7 @@ export function makeEnv(over: Partial<Env> = {}): Env & { raw: DatabaseSync } {
     DB: d1,
     KV: makeKV(),
     ENVIRONMENT: "local",
+    DEMO_MODE: "true",
     NETWORK: "testnet",
     APP_URL: "http://localhost:5173",
     POLLAR_API_URL: "http://pollar.invalid",

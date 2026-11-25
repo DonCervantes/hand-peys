@@ -5,7 +5,7 @@ import { ASSETS, computeFee, formatMoney, linkIdSchema, stellarAddressSchema, ty
 import { explorerTx } from "@hand-peys/stellar";
 import { db } from "../auth";
 import * as s from "../db/schema";
-import { getDeployment, isDeployed, type AppEnv } from "../env";
+import { getDeployment, isDemo, type AppEnv } from "../env";
 import { applyEvent, runIndexer } from "../services/indexer";
 
 async function loadLink(c: { env: AppEnv["Bindings"] }, id: string) {
@@ -34,7 +34,7 @@ export const publicRoutes = new Hono<AppEnv>()
       expiresAt: link.expiresAt,
       merchant: { name: merchant.name, city: merchant.city, category: merchant.category, wallet: merchant.wallet, verified: merchant.kycStatus === "approved" },
       payment: payment ? { status: payment.status, payer: payment.payer, txHash: payment.txHash, createdAt: payment.createdAt, explorerUrl: explorerTx(d, payment.txHash) } : null,
-      chain: { network: d.network, demo: !isDeployed(d), paymentLink: d.contracts.payment_link, escrow: d.contracts.escrow, token: d.tokens[link.asset as AssetCode]?.contractId ?? null },
+      chain: { network: d.network, demo: isDemo(c.env), paymentLink: d.contracts.payment_link, escrow: d.contracts.escrow, token: d.tokens[link.asset as AssetCode]?.contractId ?? null },
     });
   })
 
@@ -70,10 +70,9 @@ h1{font-size:20px}dl{display:grid;grid-template-columns:auto 1fr;gap:8px 16px}dt
     }
   })
 
-  /** Solo local sin contratos: simula el pago para demos y E2E. */
+  /** Solo en modo demo local: simula el pago para demos y E2E. */
   .post("/p/:id/demo-pay", async (c) => {
-    const d = getDeployment(c.env.NETWORK);
-    if (c.env.ENVIRONMENT !== "local" || isDeployed(d)) throw new HTTPException(404);
+    if (!isDemo(c.env)) throw new HTTPException(404);
     const { link } = await loadLink(c, c.req.param("id"));
     if (link.status !== "open") throw new HTTPException(409, { message: "Este link ya no está abierto" });
     const { payer } = (await c.req.json().catch(() => ({}))) as { payer?: string };

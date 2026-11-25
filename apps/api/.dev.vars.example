@@ -1,4 +1,6 @@
 ENVIRONMENT=local
+# true: pagos simulados y KYC automático. false: usa los contratos de deployments/testnet.json
+DEMO_MODE=true
 APP_URL=http://localhost:8787
 SESSION_SECRET=dev-only-secret-change-me-0123456789
 # POLLAR_SECRET=

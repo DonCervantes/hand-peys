@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { revokeKycServer, setKycStatusServer } from "@hand-peys/stellar";
 import { db } from "../auth";
 import * as s from "../db/schema";
-import { getDeployment, isDeployed, type Env } from "../env";
+import { chainEnabled, getDeployment, type Env } from "../env";
 import { getPollarKyc, sha256 } from "../pollar";
 
 const YEAR = 365 * 24 * 3600;
@@ -11,7 +11,7 @@ type Merchant = typeof s.merchants.$inferSelect;
 /** Escribe el KYC on-chain con la cuenta de cumplimiento (si hay contratos y llave). */
 async function writeOnChain(env: Env, m: Merchant, level: 0 | 1 | 2, ref: string) {
   const d = getDeployment(env.NETWORK);
-  if (!isDeployed(d) || !env.COMPLIANCE_SIGNER_SECRET) return { txHash: null, expiresAt: Math.floor(Date.now() / 1000) + YEAR };
+  if (!chainEnabled(env) || !env.COMPLIANCE_SIGNER_SECRET) return { txHash: null, expiresAt: Math.floor(Date.now() / 1000) + YEAR };
   const expiresAt = Math.floor(Date.now() / 1000) + YEAR;
   const txHash = await setKycStatusServer(d, env.COMPLIANCE_SIGNER_SECRET, {
     merchant: m.wallet,
@@ -51,7 +51,7 @@ export async function rejectOrSuspend(
 ) {
   let txHash: string | null = null;
   const d = getDeployment(env.NETWORK);
-  if (m.kycStatus === "approved" && isDeployed(d) && env.COMPLIANCE_SIGNER_SECRET) {
+  if (m.kycStatus === "approved" && chainEnabled(env) && env.COMPLIANCE_SIGNER_SECRET) {
     txHash = await revokeKycServer(d, env.COMPLIANCE_SIGNER_SECRET, m.wallet);
   }
   const now = Date.now();

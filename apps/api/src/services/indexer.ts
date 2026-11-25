@@ -8,7 +8,7 @@ import { computeFee } from "@hand-peys/shared";
 import { decodeEvent, fetchEvents, type HandPeysEvent } from "@hand-peys/stellar";
 import { db } from "../auth";
 import * as s from "../db/schema";
-import { getDeployment, isDeployed, type Env, type SerializedEvent } from "../env";
+import { chainEnabled, getDeployment, type Env, type SerializedEvent } from "../env";
 import { syncMerchantKyc } from "./kyc";
 
 const cursorKey = (env: Env) => `indexer:cursor:${env.NETWORK}`;
@@ -129,7 +129,7 @@ export async function applySerialized(env: Env, e: SerializedEvent) {
 /** Tick del cron: lee eventos nuevos y los aplica (o los encola). */
 export async function runIndexer(env: Env) {
   const d = getDeployment(env.NETWORK);
-  if (!isDeployed(d)) return { skipped: "contratos no desplegados" };
+  if (!chainEnabled(env)) return { skipped: "contratos no activos (no desplegados o DEMO_MODE)" };
   const cursor = (await env.KV.get(cursorKey(env))) ?? undefined;
   const { events, cursor: next } = await fetchEvents(d, { cursor });
   let applied = 0;

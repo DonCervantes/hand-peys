@@ -13,7 +13,7 @@ import {
 import { server } from "@hand-peys/stellar";
 import { assertMerchantPerm, db, requireAuth } from "../auth";
 import * as s from "../db/schema";
-import { getDeployment, isDeployed, type AppEnv } from "../env";
+import { getDeployment, isDemo, type AppEnv } from "../env";
 import { syncMerchantKyc } from "../services/kyc";
 
 const startOfTodayMx = () => {
@@ -88,7 +88,7 @@ export const merchantRoutes = new Hono<AppEnv>()
     if (merchant.kycStatus !== "approved") throw new HTTPException(403, { message: "Completa tu verificación para cobrar" });
 
     const d = getDeployment(c.env.NETWORK);
-    const demo = !isDeployed(d) && c.env.ENVIRONMENT === "local";
+    const demo = isDemo(c.env);
     const id = newLinkId();
     const expiresAt = input.expiresInHours ? Math.floor(Date.now() / 1000) + input.expiresInHours * 3600 : 0;
     const amountUnits = toUnits(input.amount).toString();

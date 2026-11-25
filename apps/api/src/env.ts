@@ -19,6 +19,8 @@ export interface Env {
   /** Wallets (G...) separadas por coma que reciben el rol de plataforma al iniciar sesión. */
   SUPER_ADMIN_WALLETS?: string;
   COMPLIANCE_WALLETS?: string;
+  /** Solo local: "true" simula pagos y KYC aunque haya contratos desplegados. */
+  DEMO_MODE?: string;
 }
 
 export interface SessionUser {
@@ -54,3 +56,11 @@ export function getDeployment(network: NetworkName): Deployment {
 }
 
 export const isDeployed = (d: Deployment) => Boolean(d.contracts.payment_link);
+
+/** La instancia usa los contratos: están desplegados y no se forzó DEMO_MODE en local. */
+export const chainEnabled = (env: Pick<Env, "NETWORK" | "ENVIRONMENT" | "DEMO_MODE">) =>
+  isDeployed(getDeployment(env.NETWORK)) && !(env.ENVIRONMENT === "local" && env.DEMO_MODE === "true");
+
+/** Modo demo (solo local): pagos simulados y KYC automático. */
+export const isDemo = (env: Pick<Env, "NETWORK" | "ENVIRONMENT" | "DEMO_MODE">) =>
+  env.ENVIRONMENT === "local" && !chainEnabled(env);

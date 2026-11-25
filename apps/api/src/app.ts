@@ -3,7 +3,7 @@ import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { secureHeaders } from "hono/secure-headers";
 import { ZodError } from "zod";
-import { getDeployment, isDeployed, type AppEnv } from "./env";
+import { chainEnabled, getDeployment, isDemo, isDeployed, type AppEnv } from "./env";
 import { adminRoutes } from "./routes/admin";
 import { authRoutes } from "./routes/auth";
 import { merchantRoutes } from "./routes/merchants";
@@ -29,13 +29,13 @@ app.use("/p/*", rateLimit(120));
 
 app.get("/health", (c) => {
   const d = getDeployment(c.env.NETWORK);
-  return c.json({ ok: true, network: d.network, deployed: isDeployed(d), contracts: d.contracts });
+  return c.json({ ok: true, network: d.network, deployed: isDeployed(d), chain: chainEnabled(c.env), contracts: d.contracts });
 });
 
 /** Config pública para el front (red, contratos, tokens). */
 app.get("/config", (c) => {
   const d = getDeployment(c.env.NETWORK);
-  return c.json({ ...d, demo: !isDeployed(d) && c.env.ENVIRONMENT === "local" });
+  return c.json({ ...d, demo: isDemo(c.env) });
 });
 
 app.route("/auth", authRoutes);
