@@ -1,0 +1,12 @@
+node_modules/
+dist/
+target/
+.wrangler/
+.dev.vars
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+contracts/**/test_snapshots/
+packages/stellar/src/generated/
