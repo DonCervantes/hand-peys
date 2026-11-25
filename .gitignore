@@ -1,0 +1,54 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+.output
+.vinxi
+.tanstack/**
+.nitro
+*.local
+
+# Env / secrets (keep .env.example tracked)
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Documentos con datos personales o bancarios (solo locales; el repo es público)
+docs/soporte-pey-pago-no-registrado.md
+
+# Wrangler / Cloudflare
+.wrangler/
+.dev.vars
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Worktrees locales de Claude Code
+.claude/
+
+# Resultados de Playwright (E2E)
+test-results/
+playwright-report/
+
+# Archivos del video (pesados, no se versionan)
+video/media/
+video/node_modules/
+video/out/
+video/public/
