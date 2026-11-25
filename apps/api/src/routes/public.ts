@@ -6,7 +6,7 @@ import { explorerTx } from "@hand-peys/stellar";
 import { db } from "../auth";
 import * as s from "../db/schema";
 import { getDeployment, isDeployed, type AppEnv } from "../env";
-import { applyEvent } from "../services/indexer";
+import { applyEvent, runIndexer } from "../services/indexer";
 
 async function loadLink(c: { env: AppEnv["Bindings"] }, id: string) {
   if (!linkIdSchema.safeParse(id).success) throw new HTTPException(404, { message: "Link no encontrado" });
@@ -55,6 +55,19 @@ h1{font-size:20px}dl{display:grid;grid-template-columns:auto 1fr;gap:8px 16px}dt
 <dt>Activo</dt><dd>${ASSETS[asset].label}</dd><dt>Estado</dt><dd>${payment.status}</dd><dt>Red</dt><dd>Stellar ${d.network}</dd>
 <dt>Transacción</dt><dd><a href="${explorerTx(d, payment.txHash)}">${payment.txHash}</a></dd></dl>
 <p><button onclick="print()">Imprimir / Guardar PDF</button></p></body></html>`);
+  })
+
+  /** Después de firmar un pago, el front pide indexar ya en vez de esperar al cron (rate limit en /p/*). */
+  .post("/p/:id/sync", async (c) => {
+    if (!linkIdSchema.safeParse(c.req.param("id")).success) throw new HTTPException(404);
+    const lockKey = `indexer:lock:${c.env.NETWORK}`;
+    if (await c.env.KV.get(lockKey)) return c.json({ queued: true }, 202);
+    await c.env.KV.put(lockKey, "1", { expirationTtl: 60 });
+    try {
+      return c.json(await runIndexer(c.env));
+    } finally {
+      await c.env.KV.delete(lockKey);
+    }
   })
 
   /** Solo local sin contratos: simula el pago para demos y E2E. */

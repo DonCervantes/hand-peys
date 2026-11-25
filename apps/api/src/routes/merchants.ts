@@ -156,7 +156,10 @@ export const merchantRoutes = new Hono<AppEnv>()
       .innerJoin(s.users, eq(s.users.id, s.memberships.userId))
       .where(eq(s.memberships.merchantId, mid));
     const invites = await db(c.env).query.invitations.findMany({ where: eq(s.invitations.merchantId, mid) });
-    return c.json({ members, invites: invites.filter((i) => !i.acceptedAt) });
+    return c.json({
+      members,
+      invites: invites.filter((i) => !i.acceptedAt).map((i) => ({ ...i, url: `${c.env.APP_URL}/invitacion/${i.id}` })),
+    });
   })
 
   .post("/:mid/members", async (c) => {
@@ -165,7 +168,7 @@ export const merchantRoutes = new Hono<AppEnv>()
     const input = inviteMemberSchema.parse(await c.req.json());
     const id = crypto.randomUUID();
     await db(c.env).insert(s.invitations).values({ id, merchantId: mid, email: input.email.toLowerCase(), role: input.role, createdAt: Date.now() });
-    return c.json({ id }, 201);
+    return c.json({ id, url: `${c.env.APP_URL}/invitacion/${id}` }, 201);
   })
 
   .delete("/:mid/members/:userId", async (c) => {

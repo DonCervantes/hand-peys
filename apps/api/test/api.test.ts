@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { Keypair } from "@stellar/stellar-sdk";
 import { app } from "../src/app";
 import { applyEvent } from "../src/services/indexer";
+import { signSep53 } from "../src/sep53";
 import { makeEnv } from "./shim";
 
 type Env = ReturnType<typeof makeEnv>;
@@ -24,11 +25,19 @@ async function call(env: Env, method: string, path: string, body?: unknown, toke
   return { status: res.status, json };
 }
 
+async function loginKp(env: Env, kp: Keypair, email?: string) {
+  const wallet = kp.publicKey();
+  const ch = await call(env, "POST", "/auth/challenge", { wallet });
+  expect(ch.status).toBe(200);
+  const signature = await signSep53(kp.secret(), ch.json.message);
+  const r = await call(env, "POST", "/auth/session", { wallet, nonce: ch.json.nonce, signature, email });
+  return { ...r, wallet };
+}
+
 async function login(env: Env, email = "lupe@example.com") {
-  const wallet = Keypair.random().publicKey();
-  const r = await call(env, "POST", "/auth/session", { pollarToken: `dev:${wallet}:${email}` });
+  const r = await loginKp(env, Keypair.random(), email);
   expect(r.status).toBe(200);
-  return { token: r.json.token as string, wallet, userId: r.json.user.id as string };
+  return { token: r.json.token as string, wallet: r.wallet, userId: r.json.user.id as string };
 }
 
 async function merchantWithKyc(env: Env) {
@@ -46,9 +55,16 @@ describe("auth", () => {
     expect((await call(env, "GET", "/auth/me")).status).toBe(401);
   });
 
-  it("rechaza tokens de Pollar inválidos", async () => {
+  it("rechaza firmas inválidas y retos reutilizados", async () => {
     const env = makeEnv();
-    expect((await call(env, "POST", "/auth/session", { pollarToken: "basura" })).status).toBe(401);
+    const kp = Keypair.random();
+    const wallet = kp.publicKey();
+    const ch = await call(env, "POST", "/auth/challenge", { wallet });
+    const bad = await signSep53(Keypair.random().secret(), ch.json.message);
+    expect((await call(env, "POST", "/auth/session", { wallet, nonce: ch.json.nonce, signature: bad })).status).toBe(401);
+    // El reto se consume aunque falle: no se puede reintentar con el mismo nonce.
+    const good = await signSep53(kp.secret(), ch.json.message);
+    expect((await call(env, "POST", "/auth/session", { wallet, nonce: ch.json.nonce, signature: good })).status).toBe(401);
   });
 
   it("crea usuario y regresa /me", async () => {
@@ -60,9 +76,9 @@ describe("auth", () => {
   });
 
   it("asigna rol de plataforma por wallet", async () => {
-    const admin = Keypair.random().publicKey();
-    const env = makeEnv({ SUPER_ADMIN_WALLETS: admin });
-    const r = await call(env, "POST", "/auth/session", { pollarToken: `dev:${admin}:a@hp.mx` });
+    const kp = Keypair.random();
+    const env = makeEnv({ SUPER_ADMIN_WALLETS: kp.publicKey() });
+    const r = await loginKp(env, kp);
     const me = await call(env, "GET", "/auth/me", undefined, r.json.token);
     expect(me.json.user.platformRole).toBe("super_admin");
   });
@@ -122,8 +138,13 @@ describe("roles", () => {
   it("cajero crea links pero no ve colaboradores", async () => {
     const env = makeEnv();
     const { owner, mid } = await merchantWithKyc(env);
-    await call(env, "POST", `/merchants/${mid}/members`, { email: "cajero@example.com", role: "comercio_cajero" }, owner.token);
-    const cajero = await login(env, "cajero@example.com");
+    const inv = await call(env, "POST", `/merchants/${mid}/members`, { email: "cajero@example.com", role: "comercio_cajero" }, owner.token);
+    // Decir el mismo email NO basta: hace falta el link de invitación.
+    const impostor = await login(env, "cajero@example.com");
+    expect((await call(env, "GET", "/auth/me", undefined, impostor.token)).json.merchants).toEqual([]);
+    const cajero = await login(env, "otro-correo@example.com");
+    expect((await call(env, "POST", `/auth/invitations/${inv.json.id}/accept`, undefined, cajero.token)).status).toBe(200);
+    expect((await call(env, "POST", `/auth/invitations/${inv.json.id}/accept`, undefined, impostor.token)).status).toBe(404);
     const me = await call(env, "GET", "/auth/me", undefined, cajero.token);
     expect(me.json.merchants[0].role).toBe("comercio_cajero");
     expect((await call(env, "POST", `/merchants/${mid}/links`, { amount: "50", description: "Atole" }, cajero.token)).status).toBe(201);
@@ -145,10 +166,10 @@ describe("roles", () => {
   });
 
   it("cumplimiento suspende un comercio y ya no puede cobrar", async () => {
-    const comp = Keypair.random().publicKey();
-    const env = makeEnv({ COMPLIANCE_WALLETS: comp });
+    const comp = Keypair.random();
+    const env = makeEnv({ COMPLIANCE_WALLETS: comp.publicKey() });
     const { owner, mid } = await merchantWithKyc(env);
-    const c = await call(env, "POST", "/auth/session", { pollarToken: `dev:${comp}:c@hp.mx` });
+    const c = await loginKp(env, comp);
     const r = await call(env, "POST", `/admin/kyc/${mid}`, { decision: "suspend", reason: "Revisión" }, c.json.token);
     expect(r.status).toBe(200);
     expect((await call(env, "POST", `/merchants/${mid}/links`, { amount: "1", description: "x" }, owner.token)).status).toBe(403);

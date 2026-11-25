@@ -5,16 +5,13 @@
  * confirmar contra docs.pollar.xyz y el `.d.ts` de `@pollar/core`. Todo lo
  * específico de Pollar vive en este archivo para cambiarlo en un solo lugar.
  *
- * Modo desarrollo: si ENVIRONMENT=local y no hay POLLAR_SECRET, se aceptan
- * tokens `dev:<wallet G...>:<email>` y el KYC se aprueba al sincronizar.
+ * La autenticación NO depende de Pollar en el servidor: el front firma un reto
+ * SEP-53 con la wallet de Pollar y aquí lo verificamos (ver sep53.ts).
+ *
+ * Modo desarrollo: si ENVIRONMENT=local y no hay POLLAR_SECRET, el KYC se
+ * aprueba al sincronizar.
  */
 import type { Env } from "./env";
-
-export interface PollarIdentity {
-  pollarId: string;
-  email: string | null;
-  wallet: string;
-}
 
 export type PollarKycState = "not_started" | "pending" | "approved" | "rejected";
 
@@ -38,22 +35,6 @@ async function pollarFetch<T>(env: Env, path: string, init?: RequestInit): Promi
   });
   if (!res.ok) throw new Error(`Pollar ${path} → ${res.status}`);
   return (await res.json()) as T;
-}
-
-/** Valida el token de sesión que el front obtuvo de `@pollar/react`. */
-export async function verifyPollarSession(env: Env, token: string): Promise<PollarIdentity> {
-  if (devMode(env)) {
-    const [prefix, wallet, email] = token.split(":");
-    if (prefix !== "dev" || !wallet || !/^G[A-Z2-7]{55}$/.test(wallet)) throw new Error("Token dev inválido");
-    return { pollarId: `dev_${wallet}`, email: email ?? null, wallet };
-  }
-  // TODO(HP-016): confirmar endpoint y forma de respuesta.
-  const data = await pollarFetch<{ user: { id: string; email?: string }; wallet: { address: string } }>(
-    env,
-    "/v1/sessions/verify",
-    { method: "POST", body: JSON.stringify({ token }) }
-  );
-  return { pollarId: data.user.id, email: data.user.email ?? null, wallet: data.wallet.address };
 }
 
 /** Consulta el estado de KYC del usuario directamente en Pollar (no confiamos en el cliente). */
