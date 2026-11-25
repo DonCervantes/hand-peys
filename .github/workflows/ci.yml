@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: contracts
+      - run: cargo test
+      - run: cargo clippy --all-targets -- -D warnings
+      - name: Build wasm
+        run: |
+          for c in kyc_registry fee_splitter payment_link escrow; do
+            cargo rustc -p $c --release --target wasm32v1-none --crate-type cdylib
+          done
+          ls -la target/wasm32v1-none/release/*.wasm
+
+  app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r typecheck
+      - run: pnpm -r test
+      - run: pnpm --filter @hand-peys/web build
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @hand-peys/web build
+      - run: cp apps/api/.dev.vars.example apps/api/.dev.vars
+      - run: pnpm --filter @hand-peys/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @hand-peys/web exec playwright test
