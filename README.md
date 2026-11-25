@@ -10,7 +10,7 @@ Proyecto para el **Ship It: Builder Challenge (BAF × Stellar México)**, 23–2
 |---|---|
 | 🌐 App (testnet) | `https://hand-peys.cruzcervantesdanieladrianelias.workers.dev` *(después de HP-035)* |
 | 🚀 Mainnet | *(HP-041)* |
-| 📜 Contratos | ver [`deployments/`](deployments/) |
+| 📜 Contratos (testnet) | [`docs/TESTNET.md`](docs/TESTNET.md) · funciones y transacciones de prueba |
 | 🎬 Demo | [`docs/DEMO.md`](docs/DEMO.md) |
 
 ## Qué hace

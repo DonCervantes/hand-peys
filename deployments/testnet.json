@@ -1,10 +1,29 @@
 {
   "network": "testnet",
-  "deployedAt": null,
-  "admin": "",
-  "compliance": "",
-  "treasury": "",
-  "contracts": { "kyc_registry": "", "fee_splitter": "", "payment_link": "", "escrow": "" },
-  "tokens": { "MXNE": { "asset": "", "contractId": "", "decimals": 7 }, "USDC": { "asset": "", "contractId": "", "decimals": 7 } },
-  "params": { "feeBps": 90, "escrowWindowSecs": 604800 }
+  "deployedAt": "2026-11-25T21:11:22.329Z",
+  "admin": "GDWC3MVIMN7MDB3QN4P2E5CRBYZ4AZHCCC2YSSEKEXZ7O72FS5U3OLTF",
+  "compliance": "GDWHUAEBXVLCSJMZ3V3GUQIXXT4LXSIQ2J4XSAHBFYSEXSI7ZCTLG5FC",
+  "treasury": "GBWGWEY5NW4A5UPKGS5JSJ7ISS57JQYBIE7HUTAYTGYQ7E3IZWXYHF7D",
+  "contracts": {
+    "kyc_registry": "CC3GLG7GR6VDYPUSC7MXMRQWFNLWGMPUPWVXJY7QI7YEEAKKNOKBBUX3",
+    "fee_splitter": "CATJXC5XBFXCDWYLN7QJRGKEIG2TLSTBDTU545FZ7K6KEFRKP4LMI6JE",
+    "payment_link": "CCFGLYZ6DZGJMDTDY73DOIRHNF4AUGO7YJOKCRZ4AWDIIMXY6F4SO63N",
+    "escrow": "CBF5XDLMJWBDA6ZPQ727W7CXAQW46M64UAWVKJEAMXJQXB6JQERTAT5G"
+  },
+  "tokens": {
+    "MXNE": {
+      "asset": "MXNe:GDWC3MVIMN7MDB3QN4P2E5CRBYZ4AZHCCC2YSSEKEXZ7O72FS5U3OLTF",
+      "contractId": "CDDAMABX4LONENX7IHBLWTHIAWIH26WMN2MCHSZBJI3NEV4J5THD2KHQ",
+      "decimals": 7
+    },
+    "USDC": {
+      "asset": "USDC:GDWC3MVIMN7MDB3QN4P2E5CRBYZ4AZHCCC2YSSEKEXZ7O72FS5U3OLTF",
+      "contractId": "CBXMR5BJHT65ROAYVBS6VBO6LUAYDP37XJOJLNJGGXOQWBV4OEXEUNNE",
+      "decimals": 7
+    }
+  },
+  "params": {
+    "feeBps": 90,
+    "escrowWindowSecs": 604800
+  }
 }
