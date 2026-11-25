@@ -1,0 +1,16 @@
+[package]
+name = "integration_tests"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lib]
+doctest = false
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
+kyc_registry = { path = "../kyc_registry" }
+fee_splitter = { path = "../fee_splitter" }
+payment_link = { path = "../payment_link" }
+escrow = { path = "../escrow" }
