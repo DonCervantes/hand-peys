@@ -1,0 +1,69 @@
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { Deployment } from "@hand-peys/stellar";
+import { api, ApiError, tokenStore, type Me } from "./api";
+import { useWallet } from "./wallet";
+
+export type AppConfig = Deployment & { demo: boolean };
+
+export function useConfig() {
+  return useQuery({ queryKey: ["config"], queryFn: () => api<AppConfig>("/config"), staleTime: Infinity });
+}
+
+/** Sesión de Hand Peys: wallet conectada + reto SEP-53 firmado → token. */
+export function useSession() {
+  const wallet = useWallet();
+  const qc = useQueryClient();
+  const [signingIn, setSigningIn] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const attempted = useRef<string | null>(null);
+
+  const me = useQuery({
+    queryKey: ["me", tokenStore.get()],
+    queryFn: () => api<Me>("/auth/me"),
+    enabled: Boolean(tokenStore.get()),
+    retry: (n, e) => !(e instanceof ApiError && e.status === 401) && n < 2,
+  });
+
+  const signIn = useCallback(async () => {
+    if (!wallet.address) return;
+    setSigningIn(true);
+    setError(null);
+    try {
+      const ch = await api<{ nonce: string; message: string }>("/auth/challenge", { body: { wallet: wallet.address } });
+      const signature = await wallet.signMessage(ch.message);
+      const res = await api<{ token: string }>("/auth/session", { body: { wallet: wallet.address, nonce: ch.nonce, signature } });
+      tokenStore.set(res.token);
+      await qc.invalidateQueries({ queryKey: ["me"] });
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSigningIn(false);
+    }
+  }, [wallet, qc]);
+
+  // Al conectar la wallet, inicia sesión automáticamente (una vez por dirección).
+  useEffect(() => {
+    const tokenWallet = me.data?.user.wallet;
+    if (wallet.ready && wallet.address && tokenWallet !== wallet.address && attempted.current !== wallet.address && !me.isFetching) {
+      attempted.current = wallet.address;
+      void signIn();
+    }
+  }, [wallet.ready, wallet.address, me.data, me.isFetching, signIn]);
+
+  // Token inválido → límpialo.
+  useEffect(() => {
+    if (me.error instanceof ApiError && me.error.status === 401) tokenStore.set(null);
+  }, [me.error]);
+
+  const signOut = useCallback(async () => {
+    await api("/auth/logout", { method: "POST" }).catch(() => {});
+    tokenStore.set(null);
+    attempted.current = null;
+    wallet.disconnect();
+    qc.clear();
+  }, [wallet, qc]);
+
+  const loggedIn = Boolean(me.data && wallet.address && me.data.user.wallet === wallet.address);
+  return { me: me.data, loading: me.isLoading || signingIn, loggedIn, error, signIn, signOut, refetch: me.refetch };
+}

@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@theme {
+  --color-rosa: #e4007c;
+  --color-rosa-dark: #b80064;
+  --color-rosa-soft: #ffe3f1;
+  --color-nopal: #0f7b5f;
+  --color-nopal-soft: #dff5ec;
+  --color-maiz: #f6b31b;
+  --color-crema: #fff8f0;
+  --color-tinta: #1d1a24;
+  --color-gris: #6b6575;
+  --color-linea: #ece4da;
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+html,
+body {
+  background: var(--color-crema);
+  color: var(--color-tinta);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.papel-picado {
+  background-image: radial-gradient(circle at 10px 0, transparent 9px, var(--color-rosa) 10px);
+  background-size: 20px 12px;
+  background-repeat: repeat-x;
+  height: 12px;
+}

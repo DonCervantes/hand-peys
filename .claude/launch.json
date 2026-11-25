@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "hand-peys",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@hand-peys/api", "exec", "wrangler", "dev", "--port", "8787"],
+      "port": 8787
+    }
+  ]
+}
