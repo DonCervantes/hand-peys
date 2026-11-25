@@ -1,0 +1,56 @@
+// Un solo Worker sirve la API (/api/*) y la web (Workers Static Assets).
+// URL: https://hand-peys.cruzcervantesdanieladrianelias.workers.dev
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "hand-peys",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "../web/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "observability": { "enabled": true },
+  "triggers": { "crons": ["* * * * *"] },
+  "vars": {
+    "ENVIRONMENT": "testnet",
+    "NETWORK": "testnet",
+    "APP_URL": "https://hand-peys.cruzcervantesdanieladrianelias.workers.dev",
+    "POLLAR_API_URL": "https://api.pollar.xyz",
+    "KYC_LEVEL1_MONTHLY_LIMIT_MXN": "50000"
+  },
+  "d1_databases": [
+    // Crear con: wrangler d1 create hand-peys-db  → pegar el database_id aquí.
+    { "binding": "DB", "database_name": "hand-peys-db", "database_id": "REEMPLAZAR_CON_ID_D1", "migrations_dir": "migrations" }
+  ],
+  "kv_namespaces": [
+    // Crear con: wrangler kv namespace create KV
+    { "binding": "KV", "id": "REEMPLAZAR_CON_ID_KV" }
+  ],
+  // Cloudflare Queues requiere el plan Workers Paid. Si está disponible, descomenta:
+  // "queues": {
+  //   "producers": [{ "binding": "EVENTS_QUEUE", "queue": "hand-peys-events" }],
+  //   "consumers": [{ "queue": "hand-peys-events", "max_batch_size": 50 }]
+  // },
+  // Sin la cola, el indexer procesa los eventos inline (mismo código, idempotente).
+  "env": {
+    "mainnet": {
+      "name": "hand-peys-mainnet",
+      "vars": {
+        "ENVIRONMENT": "mainnet",
+        "NETWORK": "mainnet",
+        "APP_URL": "https://hand-peys-mainnet.cruzcervantesdanieladrianelias.workers.dev",
+        "POLLAR_API_URL": "https://api.pollar.xyz",
+        "KYC_LEVEL1_MONTHLY_LIMIT_MXN": "50000"
+      },
+      "triggers": { "crons": ["* * * * *"] },
+      "d1_databases": [
+        { "binding": "DB", "database_name": "hand-peys-db-mainnet", "database_id": "REEMPLAZAR_CON_ID_D1_MAINNET", "migrations_dir": "migrations" }
+      ],
+      "kv_namespaces": [{ "binding": "KV", "id": "REEMPLAZAR_CON_ID_KV_MAINNET" }]
+    }
+  }
+  // Secretos (wrangler secret put ...): POLLAR_SECRET, COMPLIANCE_SIGNER_SECRET, SESSION_SECRET
+}

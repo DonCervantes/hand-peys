@@ -1,0 +1,10 @@
+{
+  "network": "mainnet",
+  "deployedAt": null,
+  "admin": "",
+  "compliance": "",
+  "treasury": "",
+  "contracts": { "kyc_registry": "", "fee_splitter": "", "payment_link": "", "escrow": "" },
+  "tokens": { "MXNE": { "asset": "", "contractId": "", "decimals": 7 }, "USDC": { "asset": "", "contractId": "", "decimals": 7 } },
+  "params": { "feeBps": 90, "escrowWindowSecs": 604800 }
+}
