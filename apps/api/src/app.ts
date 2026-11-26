@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { secureHeaders } from "hono/secure-headers";
@@ -9,14 +9,18 @@ import { authRoutes } from "./routes/auth";
 import { merchantRoutes } from "./routes/merchants";
 import { publicRoutes } from "./routes/public";
 
-/** Rate limit simple por IP con KV (ventana de 1 minuto). */
-const rateLimit = (max: number) =>
-  async (c: any, next: () => Promise<void>) => {
-    const ip = c.req.header("cf-connecting-ip") ?? "local";
-    const key = `rl:${ip}:${Math.floor(Date.now() / 60_000)}`;
-    const n = Number((await c.env.KV.get(key)) ?? 0);
-    if (n >= max) return c.json({ error: "Demasiadas solicitudes, intenta en un minuto" }, 429);
-    await c.env.KV.put(key, String(n + 1), { expirationTtl: 120 });
+/**
+ * Rate limit por IP con el binding nativo de Cloudflare (sin escrituras a KV).
+ * Si el binding no existe (tests) o falla, deja pasar: nunca tumba la API.
+ */
+const rateLimit = (binding: "RL_AUTH" | "RL_PUBLIC") =>
+  async (c: Context<AppEnv>, next: () => Promise<void>) => {
+    const limiter = c.env[binding];
+    if (limiter) {
+      const ip = c.req.header("cf-connecting-ip") ?? "local";
+      const ok = await limiter.limit({ key: ip }).then((r) => r.success, () => true);
+      if (!ok) return c.json({ error: "Demasiadas solicitudes, intenta en un minuto" }, 429);
+    }
     await next();
   };
 
@@ -24,8 +28,8 @@ export const app = new Hono<AppEnv>().basePath("/api");
 
 app.use("*", secureHeaders());
 app.use("*", async (c, next) => cors({ origin: c.env.APP_URL, credentials: true })(c, next));
-app.use("/auth/*", rateLimit(30));
-app.use("/p/*", rateLimit(120));
+app.use("/auth/*", rateLimit("RL_AUTH"));
+app.use("/p/*", rateLimit("RL_PUBLIC"));
 
 app.get("/health", (c) => {
   const d = getDeployment(c.env.NETWORK);

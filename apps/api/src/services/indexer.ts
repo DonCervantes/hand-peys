@@ -11,7 +11,18 @@ import * as s from "../db/schema";
 import { chainEnabled, getDeployment, type Env, type SerializedEvent } from "../env";
 import { syncMerchantKyc } from "./kyc";
 
-const cursorKey = (env: Env) => `indexer:cursor:${env.NETWORK}`;
+// El cursor vive en D1 (settings): KV gratis solo permite ~1 000 escrituras/día y el cron corre cada minuto.
+const cursorKey = (env: Env) => `indexer_cursor:${env.NETWORK}`;
+async function getCursor(env: Env) {
+  const row = await db(env).query.settings.findFirst({ where: eq(s.settings.key, cursorKey(env)) });
+  return row?.value;
+}
+async function setCursor(env: Env, value: string) {
+  await db(env)
+    .insert(s.settings)
+    .values({ key: cursorKey(env), value })
+    .onConflictDoUpdate({ target: s.settings.key, set: { value } });
+}
 
 async function feeBps(env: Env): Promise<number> {
   const row = await db(env).query.settings.findFirst({ where: eq(s.settings.key, "fee_bps") });
@@ -130,7 +141,7 @@ export async function applySerialized(env: Env, e: SerializedEvent) {
 export async function runIndexer(env: Env) {
   const d = getDeployment(env.NETWORK);
   if (!chainEnabled(env)) return { skipped: "contratos no activos (no desplegados o DEMO_MODE)" };
-  const cursor = (await env.KV.get(cursorKey(env))) ?? undefined;
+  const cursor = await getCursor(env);
   const { events, cursor: next } = await fetchEvents(d, { cursor });
   let applied = 0;
   for (const e of events) {
@@ -138,7 +149,7 @@ export async function runIndexer(env: Env) {
     if (env.EVENTS_QUEUE) await env.EVENTS_QUEUE.send(ser);
     else if (await applySerialized(env, ser)) applied++;
   }
-  if (next) await env.KV.put(cursorKey(env), next);
+  if (next && next !== cursor) await setCursor(env, next);
   return { fetched: events.length, applied };
 }
 

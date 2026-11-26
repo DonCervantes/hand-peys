@@ -22,12 +22,17 @@
     "KYC_LEVEL1_MONTHLY_LIMIT_MXN": "50000"
   },
   "d1_databases": [
-    // Crear con: wrangler d1 create hand-peys-db  → pegar el database_id aquí.
-    { "binding": "DB", "database_name": "hand-peys-db", "database_id": "REEMPLAZAR_CON_ID_D1", "migrations_dir": "migrations" }
+    // Testnet (creada 2026-11-26).
+    { "binding": "DB", "database_name": "hand-peys-db", "database_id": "80edaf93-9ea3-4576-b588-9f1103d74891", "migrations_dir": "migrations" }
   ],
   "kv_namespaces": [
-    // Crear con: wrangler kv namespace create KV
-    { "binding": "KV", "id": "REEMPLAZAR_CON_ID_KV" }
+    // Testnet: hand-peys-kv
+    { "binding": "KV", "id": "d55feddeb85e4928989dc0a82da24029" }
+  ],
+  // Rate limit nativo por IP (no gasta escrituras de KV).
+  "ratelimits": [
+    { "name": "RL_AUTH", "namespace_id": "1001", "simple": { "limit": 30, "period": 60 } },
+    { "name": "RL_PUBLIC", "namespace_id": "1002", "simple": { "limit": 120, "period": 60 } }
   ],
   // Cloudflare Queues requiere el plan Workers Paid. Si está disponible, descomenta:
   // "queues": {
@@ -49,7 +54,11 @@
       "d1_databases": [
         { "binding": "DB", "database_name": "hand-peys-db-mainnet", "database_id": "REEMPLAZAR_CON_ID_D1_MAINNET", "migrations_dir": "migrations" }
       ],
-      "kv_namespaces": [{ "binding": "KV", "id": "REEMPLAZAR_CON_ID_KV_MAINNET" }]
+      "kv_namespaces": [{ "binding": "KV", "id": "REEMPLAZAR_CON_ID_KV_MAINNET" }],
+      "ratelimits": [
+        { "name": "RL_AUTH", "namespace_id": "2001", "simple": { "limit": 30, "period": 60 } },
+        { "name": "RL_PUBLIC", "namespace_id": "2002", "simple": { "limit": 120, "period": 60 } }
+      ]
     }
   }
   // Secretos (wrangler secret put ...): POLLAR_SECRET, COMPLIANCE_SIGNER_SECRET, SESSION_SECRET

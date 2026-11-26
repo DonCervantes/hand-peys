@@ -6,6 +6,9 @@ import mainnet from "../../../deployments/mainnet.json";
 export interface Env {
   DB: D1Database;
   KV: KVNamespace;
+  /** Rate limiting nativo (wrangler "ratelimits"): /auth 30/min, /p 120/min por IP. */
+  RL_AUTH?: RateLimit;
+  RL_PUBLIC?: RateLimit;
   ASSETS?: Fetcher;
   EVENTS_QUEUE?: Queue<SerializedEvent>;
   ENVIRONMENT: "local" | "testnet" | "mainnet";
