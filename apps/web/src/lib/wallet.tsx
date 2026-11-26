@@ -3,7 +3,7 @@
  * navegador, fondeada con Friendbot en testnet) si no hay VITE_POLLAR_API_KEY.
  * El resto de la app solo usa `useWallet()`.
  */
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { PollarProvider, usePollar } from "@pollar/react";
 import "@pollar/react/styles.css";
 import { Keypair, TransactionBuilder } from "@stellar/stellar-sdk";
@@ -36,6 +36,16 @@ const NETWORK = (import.meta.env.VITE_STELLAR_NETWORK as "testnet" | "mainnet" |
 // ---------------- Pollar ----------------
 function PollarBridge({ children }: { children: ReactNode }) {
   const p = usePollar();
+  // Si la app de Pollar crea wallets bajo demanda, la creamos al iniciar sesión.
+  const creating = useRef(false);
+  useEffect(() => {
+    if (p.isAuthenticated && p.verified && !p.hasWallet && !creating.current) {
+      creating.current = true;
+      p.createWallet()
+        .catch((e) => console.error("Pollar createWallet", e))
+        .finally(() => (creating.current = false));
+    }
+  }, [p.isAuthenticated, p.verified, p.hasWallet, p]);
   const wallet = useMemo<Wallet>(
     () => ({
       kind: "pollar",

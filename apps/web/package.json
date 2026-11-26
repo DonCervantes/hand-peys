@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:testnet": "vite --mode testnet",
     "build": "tsc --noEmit && vite build",
+    "build:testnet": "tsc --noEmit && vite build --mode testnet",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "echo \"(web) sin tests unitarios; ver e2e/\""

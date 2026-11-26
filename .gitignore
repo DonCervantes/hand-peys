@@ -6,6 +6,8 @@ target/
 .env
 .env.*
 !.env.example
+# Solo valores públicos (VITE_*) por red
+!apps/web/.env.testnet
 *.log
 .DS_Store
 contracts/**/test_snapshots/
