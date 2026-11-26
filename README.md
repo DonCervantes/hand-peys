@@ -12,6 +12,7 @@ Proyecto para el **Ship It: Builder Challenge (BAF × Stellar México)**, 23–2
 | 📜 Contratos (testnet) | [`docs/TESTNET.md`](docs/TESTNET.md): IDs, funciones y transacciones de prueba |
 | 🚀 Mainnet | Pendiente (HP-038 a HP-041) |
 | 🎬 Guion del demo | [`docs/DEMO.md`](docs/DEMO.md) |
+| 📌 Estado y pendientes | [`docs/ESTADO.md`](docs/ESTADO.md) |
 
 ## Qué hace
 
@@ -145,7 +146,7 @@ Checklist completo y pendientes en [`docs/SECURITY.md`](docs/SECURITY.md).
 
 ## Documentación
 
-[PRD](docs/PRD.md) · [TDR y ADRs](docs/TDR.md) · [Arquitectura](docs/architecture.md) · [Seguridad](docs/SECURITY.md) · [Testnet](docs/TESTNET.md) · [Negocio](docs/BUSINESS.md) · [Demo](docs/DEMO.md) · [Plan original](docs/HAND-PEYS.md)
+[Estado y pendientes](docs/ESTADO.md) · [PRD](docs/PRD.md) · [TDR y ADRs](docs/TDR.md) · [Arquitectura](docs/architecture.md) · [Seguridad](docs/SECURITY.md) · [Testnet](docs/TESTNET.md) · [Negocio](docs/BUSINESS.md) · [Demo](docs/DEMO.md) · [Plan original](docs/HAND-PEYS.md)
 
 ## Licencia
 
