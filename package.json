@@ -9,7 +9,7 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
-    "contracts:build": "cd contracts && stellar contract build",
+    "contracts:build": "node scripts/build-contracts.mjs",
     "contracts:test": "cd contracts && cargo test",
     "deploy:contracts": "node scripts/deploy-contracts.mjs"
   },
