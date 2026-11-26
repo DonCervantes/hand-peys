@@ -134,6 +134,18 @@ describe("links", () => {
   });
 });
 
+describe("faucet", () => {
+  it("no existe sin FAUCET_SECRET ni fuera de testnet", async () => {
+    const wallet = Keypair.random().publicKey();
+    const body = JSON.stringify({ wallet, asset: "MXNE" });
+    const headers = { "content-type": "application/json" };
+    const noSecret = await app.request("/api/faucet", { method: "POST", body, headers }, makeEnv());
+    expect(noSecret.status).toBe(404);
+    const mainnet = await app.request("/api/faucet", { method: "POST", body, headers }, makeEnv({ NETWORK: "mainnet", FAUCET_SECRET: Keypair.random().secret() }));
+    expect(mainnet.status).toBe(404);
+  });
+});
+
 describe("roles", () => {
   it("cajero crea links pero no ve colaboradores", async () => {
     const env = makeEnv();

@@ -17,6 +17,8 @@ export interface Env {
   POLLAR_API_URL: string;
   POLLAR_SECRET?: string;
   COMPLIANCE_SIGNER_SECRET?: string;
+  /** Solo testnet: llave del emisor de MXNe/USDC de prueba para el faucet. */
+  FAUCET_SECRET?: string;
   SESSION_SECRET: string;
   KYC_LEVEL1_MONTHLY_LIMIT_MXN: string;
   /** Wallets (G...) separadas por coma que reciben el rol de plataforma al iniciar sesión. */
@@ -51,6 +53,7 @@ export function getDeployment(network: NetworkName): Deployment {
   return {
     network,
     rpcUrl: net.rpcUrl,
+    horizonUrl: net.horizonUrl,
     networkPassphrase: net.networkPassphrase,
     explorer: net.explorer,
     contracts: dep.contracts,

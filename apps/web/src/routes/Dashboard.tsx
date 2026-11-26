@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { ReceiveSetup } from "../components/AssetSetup";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Lock, Plus, ShieldCheck, Users } from "lucide-react";
 import { buildCreateLink } from "@hand-peys/stellar";
@@ -68,6 +69,7 @@ function DashboardInner({ merchant }: { merchant: Merchant }) {
       }
     >
       <ErrorNote>{summary.error?.message}</ErrorNote>
+      <ReceiveSetup merchantWallet={merchant.wallet} />
       <div className="mb-2 flex items-center gap-2 text-sm text-nopal">
         <ShieldCheck className="size-4" /> Comercio verificado {merchant.kycLevel === 2 ? "(nivel completo)" : "(nivel básico)"}
       </div>

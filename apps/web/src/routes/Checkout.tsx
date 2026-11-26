@@ -4,6 +4,7 @@ import { CheckCircle2, Clock, Lock, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { ASSETS } from "@hand-peys/shared";
 import { buildEscrow, buildPay, type EscrowAction } from "@hand-peys/stellar";
+import { AssetSetup } from "../components/AssetSetup";
 import { Logo } from "../components/Layout";
 import { Button, Card, ErrorNote, Spinner } from "../components/ui";
 import { api, type PublicLink } from "../lib/api";
@@ -122,14 +123,14 @@ export function Checkout() {
             </div>
           ) : l.status === "open" ? (
             wallet.address ? (
-              <>
+              <AssetSetup role="payer" assets={[l.asset]} need={{ asset: l.asset, units: BigInt(l.amountUnits) }}>
                 <Button size="lg" className="w-full" onClick={doPay} loading={busy || pay.pending}>
                   Pagar {money(l.amountUnits, l.asset)}
                 </Button>
                 <p className="text-center text-xs text-gris">
                   Pagando desde tu wallet {wallet.kind === "pollar" ? "Pollar" : "de prueba"}. Comisión de red: menos de un centavo.
                 </p>
-              </>
+              </AssetSetup>
             ) : (
               <Button size="lg" className="w-full" onClick={() => wallet.connect()}>
                 Pagar con Google o correo

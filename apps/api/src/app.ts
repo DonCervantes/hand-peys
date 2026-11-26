@@ -30,6 +30,7 @@ app.use("*", secureHeaders());
 app.use("*", async (c, next) => cors({ origin: c.env.APP_URL, credentials: true })(c, next));
 app.use("/auth/*", rateLimit("RL_AUTH"));
 app.use("/p/*", rateLimit("RL_PUBLIC"));
+app.use("/faucet", rateLimit("RL_AUTH"));
 
 app.get("/health", (c) => {
   const d = getDeployment(c.env.NETWORK);

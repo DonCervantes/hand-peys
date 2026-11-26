@@ -6,7 +6,9 @@
  */
 import {
   Address,
+  Asset,
   BASE_FEE,
+  Operation,
   Contract,
   Keypair,
   nativeToScVal,
@@ -23,10 +25,12 @@ export type NetworkName = "testnet" | "mainnet";
 export interface Deployment {
   network: NetworkName;
   rpcUrl: string;
+  horizonUrl: string;
   networkPassphrase: string;
   explorer: string;
   contracts: { kyc_registry: string; fee_splitter: string; payment_link: string; escrow: string };
-  tokens: Record<AssetCode, { contractId: string }>;
+  /** asset = "CODE:ISSUER" del activo clásico detrás del SAC. */
+  tokens: Record<AssetCode, { contractId: string; asset: string }>;
 }
 
 export const MODE = { direct: 0, escrow: 1 } as const;
@@ -123,6 +127,60 @@ export async function setKycStatusServer(
 export async function revokeKycServer(d: Deployment, complianceSecret: string, merchant: string) {
   const kp = Keypair.fromSecret(complianceSecret);
   const tx = await buildInvoke(d, kp.publicKey(), d.contracts.kyc_registry, "revoke", [addr(merchant)]);
+  tx.sign(kp);
+  return submitSigned(d, tx.toXDR());
+}
+
+// ---------------- Activos clásicos (trustlines) ----------------
+
+const classicAsset = (d: Pick<Deployment, "tokens">, code: AssetCode) => {
+  const [c, issuer] = d.tokens[code].asset.split(":");
+  return new Asset(c!, issuer!);
+};
+
+export interface AssetStatus {
+  /** La cuenta existe en la red (tiene XLM). */
+  exists: boolean;
+  /** Tiene trustline al activo (o es su emisor). */
+  trusted: boolean;
+  /** Saldo en unidades (7 decimales). */
+  balance: bigint;
+}
+
+/** Estado de una cuenta para un activo: existe, tiene trustline y saldo (vía Horizon). */
+export async function getAssetStatus(d: Pick<Deployment, "horizonUrl" | "tokens">, account: string, code: AssetCode): Promise<AssetStatus> {
+  const res = await fetch(`${d.horizonUrl}/accounts/${account}`);
+  if (res.status === 404) return { exists: false, trusted: false, balance: 0n };
+  if (!res.ok) throw new Error(`Horizon ${res.status}`);
+  const acc = (await res.json()) as { balances: { asset_code?: string; asset_issuer?: string; balance: string }[] };
+  const a = classicAsset(d, code);
+  if (a.getIssuer() === account) return { exists: true, trusted: true, balance: 0n };
+  const line = acc.balances.find((b) => b.asset_code === a.getCode() && b.asset_issuer === a.getIssuer());
+  if (!line) return { exists: true, trusted: false, balance: 0n };
+  const [int, frac = ""] = line.balance.split(".");
+  return { exists: true, trusted: true, balance: BigInt(int!) * 10_000_000n + BigInt(frac.padEnd(7, "0").slice(0, 7)) };
+}
+
+/** Tx clásica que agrega trustlines a los activos indicados (la firma la wallet). */
+export async function buildChangeTrust(d: Deployment, account: string, codes: AssetCode[]): Promise<Transaction> {
+  const acc = await server(d).getAccount(account);
+  const b = new TransactionBuilder(acc, { fee: BASE_FEE, networkPassphrase: d.networkPassphrase });
+  for (const c of codes) b.addOperation(Operation.changeTrust({ asset: classicAsset(d, c) }));
+  return b.setTimeout(120).build();
+}
+
+/** Solo testnet: el emisor envía activo de prueba a una cuenta con trustline. */
+export async function sendTestAsset(d: Deployment, issuerSecret: string, to: string, code: AssetCode, amount: bigint) {
+  if (d.network !== "testnet") throw new Error("El faucet solo existe en testnet");
+  const kp = Keypair.fromSecret(issuerSecret);
+  const asset = classicAsset(d, code);
+  if (asset.getIssuer() !== kp.publicKey()) throw new Error("La llave del faucet no es el emisor del activo");
+  const acc = await server(d).getAccount(kp.publicKey());
+  const units = amount.toString().padStart(8, "0");
+  const tx = new TransactionBuilder(acc, { fee: BASE_FEE, networkPassphrase: d.networkPassphrase })
+    .addOperation(Operation.payment({ destination: to, asset, amount: `${units.slice(0, -7)}.${units.slice(-7)}` }))
+    .setTimeout(60)
+    .build();
   tx.sign(kp);
   return submitSigned(d, tx.toXDR());
 }

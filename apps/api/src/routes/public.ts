@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { ASSETS, computeFee, formatMoney, linkIdSchema, stellarAddressSchema, type AssetCode } from "@hand-peys/shared";
-import { explorerTx } from "@hand-peys/stellar";
+import { ASSETS, computeFee, formatMoney, linkIdSchema, stellarAddressSchema, toUnits, type AssetCode } from "@hand-peys/shared";
+import { explorerTx, getAssetStatus, sendTestAsset } from "@hand-peys/stellar";
 import { db } from "../auth";
 import * as s from "../db/schema";
 import { getDeployment, isDemo, type AppEnv } from "../env";
@@ -87,4 +87,21 @@ h1{font-size:20px}dl{display:grid;grid-template-columns:auto 1fr;gap:8px 16px}dt
       amount: BigInt(link.amountUnits),
     });
     return c.json({ txHash, fee: computeFee(BigInt(link.amountUnits), 90).toString() });
+  })
+
+  /** Solo testnet: envía MXNe/USDC de prueba a una wallet con trustline (una vez cada 10 min). */
+  .post("/faucet", async (c) => {
+    if (c.env.NETWORK !== "testnet" || !c.env.FAUCET_SECRET) throw new HTTPException(404);
+    const body = (await c.req.json().catch(() => ({}))) as { wallet?: string; asset?: string };
+    const wallet = stellarAddressSchema.parse(body.wallet);
+    const asset: AssetCode = body.asset === "USDC" ? "USDC" : "MXNE";
+    const key = `faucet:${wallet}:${asset}`;
+    if (await c.env.KV.get(key)) throw new HTTPException(429, { message: "Ya recibiste saldo de prueba, intenta en unos minutos" });
+    const d = getDeployment(c.env.NETWORK);
+    const st = await getAssetStatus(d, wallet, asset);
+    if (!st.trusted) throw new HTTPException(409, { message: `Primero habilita ${ASSETS[asset].label} en tu wallet` });
+    const amount = toUnits(asset === "USDC" ? "100" : "2000");
+    const txHash = await sendTestAsset(d, c.env.FAUCET_SECRET, wallet, asset, amount);
+    await c.env.KV.put(key, "1", { expirationTtl: 600 });
+    return c.json({ txHash, amountUnits: amount.toString() });
   });

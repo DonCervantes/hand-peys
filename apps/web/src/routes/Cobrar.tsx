@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from "@tanstack/react-router";
+import { ReceiveSetup } from "../components/AssetSetup";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Copy, Lock, MessageCircle, Printer, Zap } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
@@ -124,6 +125,7 @@ export function NewLink() {
         <Page>
           <div className="mx-auto max-w-lg">
             <h1 className="mb-6 text-3xl font-extrabold">Nuevo cobro</h1>
+            <ReceiveSetup merchantWallet={m.wallet} />
             <Card className="p-6">
               <NewLinkForm merchant={m} />
             </Card>
