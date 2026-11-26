@@ -46,6 +46,17 @@ function PollarBridge({ children }: { children: ReactNode }) {
         .finally(() => (creating.current = false));
     }
   }, [p.isAuthenticated, p.verified, p.hasWallet, p]);
+  useEffect(() => {
+    if (DEBUG)
+      console.info("[HandPeys] pollar", {
+        isAuthenticated: p.isAuthenticated,
+        verified: p.verified,
+        hasWallet: p.hasWallet,
+        custody: p.wallet?.custody,
+        address: p.wallet?.address,
+        configStatus: p.configStatus,
+      });
+  }, [p.isAuthenticated, p.verified, p.hasWallet, p.wallet?.address, p.wallet?.custody, p.configStatus]);
   const wallet = useMemo<Wallet>(
     () => ({
       kind: "pollar",
@@ -130,10 +141,25 @@ function DemoWalletProvider({ children }: { children: ReactNode }) {
   return <WalletCtx.Provider value={wallet}>{children}</WalletCtx.Provider>;
 }
 
+// Diagnóstico: agrega ?debug=1 a la URL (se recuerda en esta pestaña) para ver los logs de Pollar.
+const DEBUG = (() => {
+  try {
+    if (new URLSearchParams(location.search).has("debug")) sessionStorage.setItem("hp_debug", "1");
+    return sessionStorage.getItem("hp_debug") === "1";
+  } catch {
+    return false;
+  }
+})();
+
+// Configuración estable (una sola instancia de PollarClient por carga de página).
+const POLLAR_CONFIG = POLLAR_KEY
+  ? { apiKey: POLLAR_KEY, stellarNetwork: NETWORK, logLevel: DEBUG ? ("debug" as const) : ("warn" as const) }
+  : null;
+
 export function WalletProvider({ children }: { children: ReactNode }) {
-  if (!POLLAR_KEY) return <DemoWalletProvider>{children}</DemoWalletProvider>;
+  if (!POLLAR_CONFIG) return <DemoWalletProvider>{children}</DemoWalletProvider>;
   return (
-    <PollarProvider client={{ apiKey: POLLAR_KEY, stellarNetwork: NETWORK }}>
+    <PollarProvider client={POLLAR_CONFIG}>
       <PollarBridge>{children}</PollarBridge>
     </PollarProvider>
   );

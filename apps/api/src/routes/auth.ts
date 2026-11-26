@@ -52,8 +52,12 @@ export const authRoutes = new Hono<AppEnv>()
     let user = await d.query.users.findFirst({ where: eq(s.users.wallet, identity.wallet) });
     const role = platformRoleFor(c.env, identity.wallet);
     if (!user) {
-      user = { id: crypto.randomUUID(), pollarId: identity.pollarId, email: identity.email, wallet: identity.wallet, platformRole: role, createdAt: Date.now() };
-      await d.insert(s.users).values(user);
+      // Idempotente: dos inicios de sesión simultáneos de la misma wallet no deben chocar.
+      await d
+        .insert(s.users)
+        .values({ id: crypto.randomUUID(), pollarId: identity.pollarId, email: identity.email, wallet: identity.wallet, platformRole: role, createdAt: Date.now() })
+        .onConflictDoNothing();
+      user = (await d.query.users.findFirst({ where: eq(s.users.wallet, identity.wallet) }))!;
     } else if ((identity.email && user.email !== identity.email) || (role && user.platformRole !== role)) {
       await d.update(s.users).set({ email: identity.email ?? user.email, platformRole: role ?? user.platformRole }).where(eq(s.users.id, user.id));
     }

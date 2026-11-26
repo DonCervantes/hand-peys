@@ -10,6 +10,10 @@ export function useConfig() {
   return useQuery({ queryKey: ["config"], queryFn: () => api<AppConfig>("/config"), staleTime: Infinity });
 }
 
+// Estado compartido entre todas las instancias del hook.
+let inflight: { address: string; promise: Promise<void> } | null = null;
+let attemptedFor: string | null = null;
+
 /** Sesión de Hand Peys: wallet conectada + reto SEP-53 firmado → token. */
 export function useSession() {
   const wallet = useWallet();
@@ -30,22 +34,36 @@ export function useSession() {
     setSigningIn(true);
     setError(null);
     try {
-      const ch = await api<{ nonce: string; message: string }>("/auth/challenge", { body: { wallet: wallet.address } });
-      const signature = await wallet.signMessage(ch.message);
-      const res = await api<{ token: string }>("/auth/session", { body: { wallet: wallet.address, nonce: ch.nonce, signature } });
-      tokenStore.set(res.token);
+      // Un solo inicio de sesión a la vez para toda la app (varios componentes usan este hook).
+      const address = wallet.address;
+      if (inflight?.address !== address) {
+        inflight = {
+          address,
+          promise: (async () => {
+            const ch = await api<{ nonce: string; message: string }>("/auth/challenge", { body: { wallet: address } });
+            const signature = await wallet.signMessage(ch.message);
+            const res = await api<{ token: string }>("/auth/session", { body: { wallet: address, nonce: ch.nonce, signature } });
+            tokenStore.set(res.token);
+          })().finally(() => {
+            if (inflight?.address === address) inflight = null;
+          }),
+        };
+      }
+      await inflight.promise;
       await qc.invalidateQueries({ queryKey: ["me"] });
     } catch (e) {
+      console.error("[HandPeys] signIn", e);
       setError((e as Error).message);
     } finally {
       setSigningIn(false);
     }
   }, [wallet, qc]);
 
-  // Al conectar la wallet, inicia sesión automáticamente (una vez por dirección).
+  // Al conectar la wallet, inicia sesión automáticamente (una vez por dirección en toda la app).
   useEffect(() => {
     const tokenWallet = me.data?.user.wallet;
-    if (wallet.ready && wallet.address && tokenWallet !== wallet.address && attempted.current !== wallet.address && !me.isFetching) {
+    if (wallet.ready && wallet.address && tokenWallet !== wallet.address && attemptedFor !== wallet.address && !me.isFetching) {
+      attemptedFor = wallet.address;
       attempted.current = wallet.address;
       void signIn();
     }
@@ -60,6 +78,7 @@ export function useSession() {
     await api("/auth/logout", { method: "POST" }).catch(() => {});
     tokenStore.set(null);
     attempted.current = null;
+    attemptedFor = null;
     wallet.disconnect();
     qc.clear();
   }, [wallet, qc]);

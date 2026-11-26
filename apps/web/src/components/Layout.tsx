@@ -17,7 +17,14 @@ export function Logo() {
 
 export function LoginButton({ size = "md", children = "Entrar" }: { size?: "md" | "lg"; children?: ReactNode }) {
   const wallet = useWallet();
-  const { loading } = useSession();
+  const { loading, signIn } = useSession();
+  // Wallet ya conectada (p. ej. sesión de Pollar activa) pero sin sesión de Hand Peys: reintenta la firma.
+  if (wallet.ready && wallet.address)
+    return (
+      <Button size={size} loading={loading} onClick={() => void signIn()}>
+        Confirmar con mi wallet
+      </Button>
+    );
   return (
     <Button size={size} loading={loading} onClick={() => wallet.connect()}>
       {children}
