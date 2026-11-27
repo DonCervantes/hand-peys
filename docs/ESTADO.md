@@ -8,7 +8,8 @@
 **Pollar quedó en pausa** (ticket [POLLAR-1](#ticket-pollar-1-el-login-desaparece-en-el-chrome-del-usuario)). Ahora trabajamos en la **UX/UI** del proyecto.
 
 - El sitio publicado volvió a la **wallet de prueba** (`pnpm --filter @hand-peys/web build`, sin la key de Pollar). Para reactivar Pollar: `pnpm --filter @hand-peys/web build:testnet` y `wrangler deploy`.
-- En el sitio publicado funcionan el login y el registro del negocio. La **verificación (KYC) falla** con "Algo salió mal", porque el servidor consulta a Pollar con un endpoint supuesto (ver "Lo que falta › 1").
+- **KYC automático solo en testnet** (temporal): `KYC_AUTO_APPROVE="true"` en `wrangler.jsonc` aprueba el nivel 1 sin Pollar y lo escribe on-chain con la cuenta de cumplimiento. No existe en `env.mainnet` y el código lo ignora fuera de testnet. **Quitarlo al conectar el KYC de Pollar.**
+- Recorrido en el sitio publicado: entrar → registrar el negocio → verificar → dashboard. Probado el 26 nov; el KYC quedó `is_verified = true` on-chain.
 
 ## Tickets abiertos
 
@@ -68,6 +69,7 @@
   - **Preguntar a Pollar** si hay API de servidor con llave secreta o webhooks firmados de "KYC aprobado".
   - **Plan B:** aprobación manual de cumplimiento en `/admin/cumplimiento`, que ya escribe on-chain. Requiere poner la wallet del usuario en `COMPLIANCE_WALLETS`.
   - Mientras tanto, en el sitio publicado **el registro de comercios falla en el paso de KYC**.
+- [ ] **Quitar `KYC_AUTO_APPROVE`** de `wrangler.jsonc` cuando funcione el KYC de Pollar.
 - [ ] **KYC en la web:** `openKycModal({ country: "MX", level: "basic" })` requiere el proveedor (Didit) activo en el dashboard.
 - [ ] **Prueba completa en el sitio publicado:** registro → KYC → cobro → pago con otra cuenta → garantía.
 

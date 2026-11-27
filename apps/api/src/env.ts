@@ -24,6 +24,8 @@ export interface Env {
   /** Wallets (G...) separadas por coma que reciben el rol de plataforma al iniciar sesión. */
   SUPER_ADMIN_WALLETS?: string;
   COMPLIANCE_WALLETS?: string;
+  /** Solo testnet: "true" aprueba el KYC nivel 1 sin Pollar (temporal). Ignorado en mainnet. */
+  KYC_AUTO_APPROVE?: string;
   /** Solo local: "true" simula pagos y KYC aunque haya contratos desplegados. */
   DEMO_MODE?: string;
 }

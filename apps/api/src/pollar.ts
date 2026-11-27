@@ -10,6 +10,10 @@
  *
  * Modo desarrollo: si ENVIRONMENT=local y no hay POLLAR_SECRET, el KYC se
  * aprueba al sincronizar.
+ *
+ * Testnet (temporal, mientras el KYC de Pollar está en pausa): con
+ * KYC_AUTO_APPROVE="true" y NETWORK="testnet" se aprueba el nivel 1. Nunca aplica
+ * en mainnet. La aprobación sí se escribe on-chain con la cuenta de cumplimiento.
  */
 import type { Env } from "./env";
 
@@ -23,6 +27,9 @@ export interface PollarKyc {
 }
 
 const devMode = (env: Env) => env.ENVIRONMENT === "local" && !env.POLLAR_SECRET;
+/** Solo testnet y solo si se pide explícitamente. */
+export const testnetAutoKyc = (env: Pick<Env, "NETWORK" | "KYC_AUTO_APPROVE">) =>
+  env.NETWORK === "testnet" && env.KYC_AUTO_APPROVE === "true";
 
 async function pollarFetch<T>(env: Env, path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${env.POLLAR_API_URL}${path}`, {
@@ -40,6 +47,7 @@ async function pollarFetch<T>(env: Env, path: string, init?: RequestInit): Promi
 /** Consulta el estado de KYC del usuario directamente en Pollar (no confiamos en el cliente). */
 export async function getPollarKyc(env: Env, pollarId: string): Promise<PollarKyc> {
   if (devMode(env)) return { state: "approved", level: 1, reference: `dev-ref-${pollarId}` };
+  if (testnetAutoKyc(env)) return { state: "approved", level: 1, reference: `testnet-auto-${pollarId}` };
   // TODO(HP-016): confirmar endpoint (equivalente de servidor a getKycStatus).
   const data = await pollarFetch<{ status: string; level?: number; verificationId?: string }>(
     env,

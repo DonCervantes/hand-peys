@@ -19,7 +19,9 @@
     "NETWORK": "testnet",
     "APP_URL": "https://hand-peys.cruzcervantesdanieladrianelias.workers.dev",
     "POLLAR_API_URL": "https://api.pollar.xyz",
-    "KYC_LEVEL1_MONTHLY_LIMIT_MXN": "50000"
+    "KYC_LEVEL1_MONTHLY_LIMIT_MXN": "50000",
+    // Temporal mientras el KYC de Pollar está en pausa (ticket POLLAR-1). Solo aplica en testnet.
+    "KYC_AUTO_APPROVE": "true"
   },
   "d1_databases": [
     // Testnet (creada 2026-11-26).

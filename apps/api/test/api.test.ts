@@ -134,6 +134,15 @@ describe("links", () => {
   });
 });
 
+describe("kyc automático de testnet", () => {
+  it("solo aplica en testnet con KYC_AUTO_APPROVE", async () => {
+    const { testnetAutoKyc } = await import("../src/pollar");
+    expect(testnetAutoKyc({ NETWORK: "testnet", KYC_AUTO_APPROVE: "true" })).toBe(true);
+    expect(testnetAutoKyc({ NETWORK: "mainnet", KYC_AUTO_APPROVE: "true" })).toBe(false);
+    expect(testnetAutoKyc({ NETWORK: "testnet" })).toBe(false);
+  });
+});
+
 describe("faucet", () => {
   it("no existe sin FAUCET_SECRET ni fuera de testnet", async () => {
     const wallet = Keypair.random().publicKey();
