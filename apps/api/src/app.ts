@@ -31,6 +31,7 @@ app.use("*", async (c, next) => cors({ origin: c.env.APP_URL, credentials: true 
 app.use("/auth/*", rateLimit("RL_AUTH"));
 app.use("/p/*", rateLimit("RL_PUBLIC"));
 app.use("/faucet", rateLimit("RL_AUTH"));
+app.use("/client-log", rateLimit("RL_AUTH"));
 
 app.get("/health", (c) => {
   const d = getDeployment(c.env.NETWORK);
@@ -41,6 +42,14 @@ app.get("/health", (c) => {
 app.get("/config", (c) => {
   const d = getDeployment(c.env.NETWORK);
   return c.json({ ...d, demo: isDemo(c.env) });
+});
+
+/** Errores del navegador (diagnóstico): solo se escriben en los logs del Worker, no se guardan. */
+app.post("/client-log", async (c) => {
+  const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
+  const clip = (v: unknown, n: number) => String(v ?? "").slice(0, n);
+  console.error("[client]", JSON.stringify({ kind: clip(body.kind, 40), message: clip(body.message, 500), stack: clip(body.stack, 2000), url: clip(body.url, 200), ua: clip(c.req.header("user-agent"), 200) }));
+  return c.body(null, 204);
 });
 
 app.route("/auth", authRoutes);

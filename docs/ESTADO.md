@@ -1,27 +1,27 @@
 # Estado del proyecto y lo que falta
 
-> Documento de traspaso entre sesiones. Última actualización: **26 nov 2026** (commit `f5459c0`).
+> Documento de traspaso entre sesiones. Última actualización: **26 nov 2026**.
 > **Fecha límite:** mainnet en vivo el **viernes 27 nov 2026 antes de las 13:00 (CDMX)**.
 
 ## Dónde nos quedamos
 
-Estábamos en el **paso 1 de la integración de Pollar: el login**.
+**Pollar quedó en pausa** (ticket [POLLAR-1](#ticket-pollar-1-el-login-desaparece-en-el-chrome-del-usuario)). Ahora trabajamos en la **UX/UI** del proyecto.
 
-- **Configurado:** el sitio publicado ya usa Pollar. La API key pública está en el build y el secreto en Cloudflare. **Entrar** abre el login de Pollar con el nombre *Hand Peys*, correo y Google.
-- **Probado desde el panel del navegador de Claude** con un correo de prueba (`prueba@example.com`). El flujo llega hasta la pantalla del código:
-  `auth:creating_session → POST /auth/session 201 → auth:sending_email → POST /auth/email 200 → auth:entering_code`.
-- **Bloqueo actual:** en el **Chrome del usuario**, la ventana de Pollar **se cierra al escribir el correo**, antes de enviarlo. Esos intentos no dejan rastro en el servidor ni en la pestaña que Claude puede leer.
+## Tickets abiertos
 
-### Siguiente acción concreta
-1. Diagnosticar el cierre en el Chrome del usuario, con cualquiera de estas dos vías:
-   - **Claude in Chrome:** el usuario dice "revísalo en mi Chrome", Claude abre `…/app?debug=1`, lee la consola en vivo y el usuario escribe su correo y el código.
-   - **Manual:** incógnito (`Ctrl+Shift+N`), abrir `https://hand-peys.cruzcervantesdanieladrianelias.workers.dev/app?debug=1`, abrir F12 › Console y mandar la captura indicando en qué momento se cierra.
-
-   Sospecha principal: una extensión del navegador, como un gestor de contraseñas o de autocompletado. Si en incógnito funciona, es eso.
-2. Con el login funcionando, verificar:
-   - que la firma SEP-53 de la wallet de Pollar (`getClient().stellar.sep53.signMessage`) pase `verifySep53` en la API;
-   - qué tipo de dirección entrega Pollar: `G…` (cuenta) o `C…` (smart account con passkey).
-3. Seguir con los pasos 2 a 4 de Pollar (abajo).
+### Ticket POLLAR-1: el login desaparece en el Chrome del usuario
+- **Síntoma:** en el Chrome del usuario, el cuadro de login desaparece al hacer clic o escribir en el campo del correo y no deja escribir. Pasó con la ventana de Pollar y también con el login propio que la reemplazó.
+- **Lo que sí funciona:** en el panel del navegador de Claude, con `prueba@example.com`, llega a la pantalla del código (`auth:creating_session → auth:sending_email → auth:entering_code`) y avisa del código incorrecto. Ningún intento del usuario llegó al servidor.
+- **Hecho para diagnosticar:**
+  - Login propio en español sin la ventana de Pollar (`apps/web/src/components/LoginPanel.tsx`).
+  - `translate="no"` para que Chrome no traduzca la página.
+  - Reporte de errores del navegador a `POST /api/client-log`, que solo escribe en los logs del Worker, más un `ErrorBoundary` y el `defaultErrorComponent` del router.
+- **Sospecha principal:** una extensión de Chrome (gestor de contraseñas, corrector o autocompletado) que modifica el campo y rompe React.
+- **Próximos pasos:**
+  1. Probar en incógnito (`Ctrl+Shift+N`). Si funciona, la causa es una extensión.
+  2. Mientras el usuario lo intenta, leer los errores con `cd apps/api; npx wrangler tail hand-peys --search "[client]"`.
+  3. O revisarlo con Claude in Chrome: la extensión no estaba conectada el 26 nov.
+- **Después del login:** verificar la firma SEP-53 de la wallet de Pollar, el tipo de dirección (`G…` o `C…`), trustlines con `setTrustline` y el KYC del servidor (ver "Lo que falta › 1").
 
 ## Qué está hecho
 
@@ -37,7 +37,7 @@ Estábamos en el **paso 1 de la integración de Pollar: el login**.
 | CI (contratos, app, E2E Playwright) | ✅ En verde en `main` | `.github/workflows/ci.yml` |
 | Repo en GitHub | ✅ `DonCervantes/hand-peys`, rama `main` | — |
 | Pollar: API key pública en el build de testnet | ✅ | `apps/web/.env.testnet`, `pnpm build:testnet` |
-| Pollar: login de punta a punta | ❌ Bloqueado (ver arriba) | — |
+| Pollar: login de punta a punta | ❌ En pausa, ticket POLLAR-1 | — |
 
 ## Infraestructura (sin secretos)
 
@@ -57,7 +57,7 @@ Estábamos en el **paso 1 de la integración de Pollar: el login**.
 ## Lo que falta (en orden)
 
 ### 1. Pollar (testnet)
-- [ ] **Login:** resolver el cierre de la ventana en Chrome (ver "Siguiente acción").
+- [ ] **Login:** ticket POLLAR-1.
 - [ ] **Firma y dirección:** verificar SEP-53 con la wallet de Pollar y el tipo de dirección. Si es `C…`, la API (`stellarAddressSchema`) y `getAssetStatus` (Horizon) hay que adaptarlos.
 - [ ] **Trustlines con Pollar:** usar `usePollar().setTrustline({ code, issuer })` cuando la wallet sea de Pollar (la app puede patrocinar la reserva). Hay que dar de alta MXNe/USDC de prueba en el dashboard (emisor `GDWC3MVIMN7MDB3QN4P2E5CRBYZ4AZHCCC2YSSEKEXZ7O72FS5U3OLTF`) y decidir si la app patrocina.
 - [ ] **KYC del lado del servidor (`TODO(HP-016)` en `apps/api/src/pollar.ts`):**

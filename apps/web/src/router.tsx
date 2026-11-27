@@ -1,5 +1,7 @@
 import { createRootRoute, createRoute, createRouter, Outlet } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Layout } from "./components/Layout";
+import { reportError } from "./lib/report";
 import { AcceptInvite, Compliance, SuperAdmin } from "./routes/Admin";
 import { Checkout } from "./routes/Checkout";
 import { LinkDetail, NewLink } from "./routes/Cobrar";
@@ -27,7 +29,23 @@ const routes = [
   createRoute({ getParentRoute: () => shell, path: "/admin/cumplimiento", component: Compliance }),
 ];
 
-export const router = createRouter({ routeTree: root.addChildren([checkout, shell.addChildren(routes)]) });
+function RouteError({ error }: { error: unknown }) {
+  useEffect(() => reportError("router", error), [error]);
+  return (
+    <div className="mx-auto max-w-md px-4 py-16 text-center">
+      <p className="text-2xl font-extrabold">Algo falló en esta página</p>
+      <pre className="mt-4 overflow-auto rounded-xl bg-black/5 p-3 text-left text-xs">{error instanceof Error ? error.message : String(error)}</pre>
+      <button className="mt-4 rounded-xl bg-rosa px-4 py-2 font-semibold text-white" onClick={() => location.reload()}>
+        Recargar
+      </button>
+    </div>
+  );
+}
+
+export const router = createRouter({
+  routeTree: root.addChildren([checkout, shell.addChildren(routes)]),
+  defaultErrorComponent: RouteError,
+});
 
 declare module "@tanstack/react-router" {
   interface Register {
