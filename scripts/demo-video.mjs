@@ -2,8 +2,8 @@
 // Graba una demo de ~80 s de handle con subtítulos y marquesina (Playwright).
 // Requiere la app local en modo demo: `pnpm --filter @hand-peys/api exec wrangler dev --port 8787`
 // (DEMO_MODE=true en apps/api/.dev.vars y la web compilada con `pnpm --filter @hand-peys/web build`).
-// Uso: node scripts/demo-video.mjs [url]
-// Salida: demo/handle-demo.webm y demo/handle-demo.srt
+// Uso: node scripts/demo-video.mjs [url] [--shipit]
+// Salida: demo/handle-demo(.webm|.srt), o demo/handle-demo-shipit.* con --shipit
 import { mkdirSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
@@ -14,7 +14,12 @@ const webDir = join(dirname(fileURLToPath(import.meta.url)), "..", "apps", "web"
 const pw = await import(pathToFileURL(createRequire(join(webDir, "package.json")).resolve("@playwright/test")).href);
 const chromium = pw.chromium ?? pw.default.chromium;
 
-const BASE = process.argv[2] ?? "http://localhost:8787";
+const args = process.argv.slice(2);
+const SHIPIT = args.includes("--shipit"); // abre con la página de Ship It y su flyer
+const BASE = args.find((a) => !a.startsWith("--")) ?? "http://localhost:8787";
+const NAME = SHIPIT ? "handle-demo-shipit" : "handle-demo";
+const SHIPIT_URL = "https://www.thebafnetwork.com/hackathons/mx/ship-it";
+const SHIPIT_FLYER = "https://www.thebafnetwork.com/hackathons/mx/ship-it/flyer.jpg";
 const OUT = join(dirname(fileURLToPath(import.meta.url)), "..", "demo");
 const RAW = join(OUT, "raw");
 rmSync(RAW, { recursive: true, force: true });
@@ -26,7 +31,7 @@ const MARK =
   '<svg viewBox="0 0 242 215" style="height:1em;width:auto"><path d="M0 0H150A150 150 0 0 1 0 150Z" fill="#212121"/><path d="M92 215A150 150 0 0 1 242 65V215Z" fill="#c4a47a"/></svg>';
 
 // Capa de la demo: marquesina inferior + subtítulos. Se reinyecta en cada carga de página.
-const overlay = ({ marquee, mark }) => {
+const overlay = ({ marquee, mark, flyer }) => {
   const install = () => {
     if (document.getElementById("__demo")) return;
     const css = document.createElement("style");
@@ -47,13 +52,22 @@ const overlay = ({ marquee, mark }) => {
       #__demo-end .tag{font-size:30px;color:#6e6a64}
       #__demo-end .url{font:600 20px Inter,system-ui,sans-serif;color:#7a5f3a}
       #__demo-end .note{font:400 14px Inter,system-ui,sans-serif;color:#6e6a64;margin-top:8px}
-      .__demo-hl{outline:4px solid #c4a47a!important;outline-offset:3px;border-radius:12px}`;
+      .__demo-hl{outline:4px solid #c4a47a!important;outline-offset:3px;border-radius:12px}
+      #__demo-flyer{position:fixed;inset:0 0 38px 0;z-index:2147483644;background:rgba(17,17,17,.88);display:none;align-items:center;justify-content:center;gap:48px}
+      #__demo-flyer img{height:560px;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+      #__demo-flyer .txt{color:#fff;font-family:Jost,Inter,system-ui,sans-serif;max-width:380px}
+      #__demo-flyer .txt b{display:block;font-size:44px;line-height:1.05;font-weight:700}
+      #__demo-flyer .txt span{display:block;margin-top:14px;font:500 20px/1.4 Inter,system-ui,sans-serif;color:#c4a47a}
+      #__demo-end .ship{display:flex;align-items:center;gap:14px;margin-top:6px;font:500 16px Inter,system-ui,sans-serif;color:#6e6a64}
+      #__demo-end .ship img{height:84px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.15)}`;
     const root = document.createElement("div");
     root.id = "__demo";
     root.innerHTML = `<div id="__demo-end"><div class="logo">${mark}<span>handle</span></div>
         <div class="tag">Cobra con un link. Recibe pesos digitales en segundos.</div>
         <div class="url">hand-peys.cruzcervantesdanieladrianelias.workers.dev</div>
+        ${flyer ? `<div class="ship"><img src="${flyer}" alt="Ship It: Builder Challenge"><span>Hecho para <b>Ship It: Builder Challenge</b><br>BAF × Stellar México · 23–27 nov 2026</span></div>` : ""}
         <div class="note">Demo grabada en entorno de prueba</div></div>
+      ${flyer ? `<div id="__demo-flyer"><img src="${flyer}" alt="Ship It: Builder Challenge"><div class="txt"><b>Ship It:<br>Builder Challenge</b><span>BAF × Stellar México<br>23–27 de noviembre de 2026<br>Cinco días para construir y lanzar en mainnet.</span></div></div>` : ""}
       <div id="__demo-cap"></div><div id="__demo-marquee"><div class="track"><span>${marquee.repeat(2)}</span><span>${marquee.repeat(2)}</span></div></div>`;
     document.head.appendChild(css);
     document.body.appendChild(root);
@@ -80,7 +94,7 @@ const context = await browser.newContext({
   locale: "es-MX",
   recordVideo: { dir: RAW, size: { width: 1280, height: 720 } },
 });
-await context.addInitScript(overlay, { marquee: MARQUEE, mark: MARK });
+await context.addInitScript(overlay, { marquee: MARQUEE, mark: MARK, flyer: SHIPIT ? SHIPIT_FLYER : null });
 const page = await context.newPage();
 const t0 = Date.now();
 const cues = [];
@@ -110,6 +124,18 @@ async function type(locator, text) {
 const scrollTo = (sel) =>
   page.evaluate((s) => document.querySelector(s)?.scrollIntoView({ behavior: "smooth", block: "center" }), sel);
 
+// 0. Ship It (opcional)
+if (SHIPIT) {
+  await page.goto(SHIPIT_URL, { waitUntil: "load" });
+  await say("Estamos construyendo Hand Peys para Ship It: Builder Challenge, de BAF × Stellar México.");
+  await wait(4500);
+  await page.mouse.wheel(0, 650);
+  await wait(2500);
+  await page.evaluate(() => (document.getElementById("__demo-flyer").style.display = "flex"));
+  await say("Cinco días para construir y lanzar en mainnet. Esto es lo que construimos:");
+  await wait(5500);
+}
+
 // 1. Landing
 await page.goto(BASE + "/");
 await page.evaluate(() => localStorage.clear());
@@ -120,7 +146,7 @@ await wait(6500);
 // 2. Ahorro vs terminal
 await scrollTo("#calc");
 await say("Una terminal cobra cerca de 3.5% + IVA. Con handle pagas solo 0.9% por cobro.");
-await wait(6500);
+await wait(SHIPIT ? 5000 : 6500);
 await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 await wait(1200);
 
@@ -162,7 +188,7 @@ const id = page.url().split("/").pop();
 
 // 6. Link y QR
 await say("Recibe un link y un QR para mandarlo por WhatsApp o imprimirlo.");
-await wait(6500);
+await wait(SHIPIT ? 5000 : 6500);
 
 // 7. El cliente paga
 await page.goto(`${BASE}/p/${id}`);
@@ -191,7 +217,7 @@ await wait(6500);
 await page.evaluate(() => {
   document.getElementById("__demo-end").style.display = "flex";
 });
-await say("handle: cobra hoy, sin terminal y por solo 0.9%.");
+await say(SHIPIT ? "Hand Peys, hecho para Ship It. Cobra hoy, sin terminal y por solo 0.9%." : "handle: cobra hoy, sin terminal y por solo 0.9%.");
 await wait(7000);
 cues[cues.length - 1].end = (Date.now() - t0) / 1000;
 
@@ -199,7 +225,7 @@ const video = page.video();
 await context.close();
 await browser.close();
 const raw = await video.path();
-renameSync(raw, join(OUT, "handle-demo.webm"));
+renameSync(raw, join(OUT, `${NAME}.webm`));
 for (const f of readdirSync(RAW)) rmSync(join(RAW, f), { force: true });
 rmSync(RAW, { recursive: true, force: true });
 
@@ -211,7 +237,7 @@ const ts = (s) => {
   return `${h}:${m}:${sec},${String(ms % 1000).padStart(3, "0")}`;
 };
 writeFileSync(
-  join(OUT, "handle-demo.srt"),
+  join(OUT, `${NAME}.srt`),
   cues.map((c, i) => `${i + 1}\n${ts(c.start)} --> ${ts(c.end)}\n${c.text}\n`).join("\n")
 );
-console.log(`✅ ${join(OUT, "handle-demo.webm")} (${((Date.now() - t0) / 1000).toFixed(1)} s) y handle-demo.srt`);
+console.log(`✅ ${join(OUT, `${NAME}.webm`)} (${((Date.now() - t0) / 1000).toFixed(1)} s) y ${NAME}.srt`);
