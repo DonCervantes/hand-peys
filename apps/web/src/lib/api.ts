@@ -1,20 +1,30 @@
 const TOKEN_KEY = "hp_token";
 
+// Reactivo: los componentes se re-renderizan cuando cambia el token (useSyncExternalStore).
+const listeners = new Set<() => void>();
+let memory: string | null | undefined;
 export const tokenStore = {
   get: () => {
+    if (memory !== undefined) return memory;
     try {
-      return localStorage.getItem(TOKEN_KEY);
+      return (memory = localStorage.getItem(TOKEN_KEY));
     } catch {
-      return null;
+      return (memory = null);
     }
   },
+  subscribe: (l: () => void) => {
+    listeners.add(l);
+    return () => void listeners.delete(l);
+  },
   set: (t: string | null) => {
+    memory = t;
     try {
       if (t) localStorage.setItem(TOKEN_KEY, t);
       else localStorage.removeItem(TOKEN_KEY);
     } catch {
       /* modo privado */
     }
+    listeners.forEach((l) => l());
   },
 };
 

@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { Deployment } from "@hand-peys/stellar";
 import { api, ApiError, tokenStore, type Me } from "./api";
 import { useWallet } from "./wallet";
@@ -21,11 +21,12 @@ export function useSession() {
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const attempted = useRef<string | null>(null);
+  const token = useSyncExternalStore(tokenStore.subscribe, tokenStore.get, () => null);
 
   const me = useQuery({
-    queryKey: ["me", tokenStore.get()],
+    queryKey: ["me", token],
     queryFn: () => api<Me>("/auth/me"),
-    enabled: Boolean(tokenStore.get()),
+    enabled: Boolean(token),
     retry: (n, e) => !(e instanceof ApiError && e.status === 401) && n < 2,
   });
 

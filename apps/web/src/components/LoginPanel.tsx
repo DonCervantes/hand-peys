@@ -22,6 +22,18 @@ export function LoginPanel({ cta = "Entrar" }: { cta?: string }) {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
 
+  // Wallet ya conectada pero falta la firma de Hand Peys (Pollar o wallet de prueba).
+  if (wallet.ready && wallet.address) {
+    return (
+      <div className="space-y-3">
+        <Button size="lg" className="w-full" loading={session.loading} onClick={() => void session.signIn()}>
+          Confirmar con mi wallet
+        </Button>
+        <ErrorNote>{session.error}</ErrorNote>
+      </div>
+    );
+  }
+
   // Wallet de prueba: un clic crea la wallet local.
   if (!wallet.login) {
     return (
@@ -33,18 +45,6 @@ export function LoginPanel({ cta = "Entrar" }: { cta?: string }) {
 
   const login = wallet.login;
   const busy = BUSY[login.step];
-
-  // Pollar ya dio la wallet pero falta la firma de Hand Peys.
-  if (wallet.ready && wallet.address) {
-    return (
-      <div className="space-y-3">
-        <Button size="lg" className="w-full" loading={session.loading} onClick={() => void session.signIn()}>
-          Confirmar con mi wallet
-        </Button>
-        <ErrorNote>{session.error}</ErrorNote>
-      </div>
-    );
-  }
   if (login.step === "authenticated") return <p className="text-center text-sm text-gris">Preparando tu wallet…</p>;
 
   const codeStep = login.step === "entering_code" || login.step === "verifying_email_code";

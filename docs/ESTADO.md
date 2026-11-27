@@ -7,6 +7,9 @@
 
 **Pollar quedó en pausa** (ticket [POLLAR-1](#ticket-pollar-1-el-login-desaparece-en-el-chrome-del-usuario)). Ahora trabajamos en la **UX/UI** del proyecto.
 
+- El sitio publicado volvió a la **wallet de prueba** (`pnpm --filter @hand-peys/web build`, sin la key de Pollar). Para reactivar Pollar: `pnpm --filter @hand-peys/web build:testnet` y `wrangler deploy`.
+- En el sitio publicado funcionan el login y el registro del negocio. La **verificación (KYC) falla** con "Algo salió mal", porque el servidor consulta a Pollar con un endpoint supuesto (ver "Lo que falta › 1").
+
 ## Tickets abiertos
 
 ### Ticket POLLAR-1: el login desaparece en el Chrome del usuario
