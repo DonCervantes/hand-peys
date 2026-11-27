@@ -55,7 +55,7 @@ function PaymentsInner({ merchant }: { merchant: Merchant }) {
                   {fecha(p.createdAt)} · de {shortAddr(p.payer)} · {p.mode === "escrow" ? "Con garantía" : "Directo"}
                 </p>
                 <div className="mt-1 flex gap-3 text-xs">
-                  <a href={`/api/p/${p.linkId}/receipt`} target="_blank" rel="noreferrer" className="text-rosa underline">
+                  <a href={`/api/p/${p.linkId}/receipt`} target="_blank" rel="noreferrer" className="text-oro-dark underline">
                     Comprobante
                   </a>
                   {config.data && !config.data.demo && (
@@ -145,7 +145,7 @@ function TeamInner({ merchant }: { merchant: Merchant }) {
         <Card>
           <form onSubmit={invite} className="space-y-4">
             <h2 className="flex items-center gap-2 text-lg font-bold">
-              <UserPlus className="size-5 text-rosa" /> Invitar cajero
+              <UserPlus className="size-5 text-oro-dark" /> Invitar cajero
             </h2>
             <Field label="Correo" hint="Le generamos un link de invitación de un solo uso para que entre con su cuenta.">
               <Input type="email" name="email" required placeholder="cajero@correo.com" />

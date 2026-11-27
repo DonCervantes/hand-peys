@@ -47,12 +47,16 @@ export const publicRoutes = new Hono<AppEnv>()
     const esc = (v: string) => v.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
     const date = new Date(payment.createdAt).toLocaleString("es-MX", { timeZone: "America/Mexico_City" });
     return c.html(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Comprobante Hand Peys</title><style>body{font-family:system-ui,sans-serif;max-width:480px;margin:40px auto;padding:0 16px;color:#1a1a1a}
-h1{font-size:20px}dl{display:grid;grid-template-columns:auto 1fr;gap:8px 16px}dt{color:#666}dd{margin:0;word-break:break-all}.amt{font-size:32px;font-weight:700;margin:16px 0}
+<title>Comprobante · handle</title><style>body{font-family:system-ui,sans-serif;max-width:480px;margin:40px auto;padding:0 16px;color:#212121;background:#fff}
+.brand{display:flex;align-items:center;gap:10px;font-size:26px;letter-spacing:.01em;margin-bottom:24px}.brand svg{height:28px}
+h1{font-size:18px;font-weight:600;color:#6e6a64;margin:0}dl{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;border-top:1px solid #e8e4dd;padding-top:16px}
+dt{color:#6e6a64}dd{margin:0;word-break:break-all}a{color:#7a5f3a}.amt{font-size:34px;font-weight:700;margin:8px 0 20px}
+button{background:#212121;color:#fff;border:0;border-radius:12px;padding:10px 16px;font-weight:600;cursor:pointer}
 @media print{button{display:none}}</style></head><body>
-<h1>Comprobante de pago · Hand Peys</h1><div class="amt">${formatMoney(payment.amountUnits, asset)}</div>
+<div class="brand"><svg viewBox="0 0 242 215" aria-hidden="true"><path d="M0 0H150A150 150 0 0 1 0 150Z" fill="#212121"/><path d="M92 215A150 150 0 0 1 242 65V215Z" fill="#c4a47a"/></svg>handle</div>
+<h1>Comprobante de pago</h1><div class="amt">${formatMoney(payment.amountUnits, asset)}</div>
 <dl><dt>Concepto</dt><dd>${esc(link.description)}</dd><dt>Comercio</dt><dd>${esc(merchant.name)}</dd><dt>Fecha</dt><dd>${date}</dd>
-<dt>Activo</dt><dd>${ASSETS[asset].label}</dd><dt>Estado</dt><dd>${payment.status}</dd><dt>Red</dt><dd>Stellar ${d.network}</dd>
+<dt>Activo</dt><dd>${ASSETS[asset].label}</dd><dt>Estado</dt><dd>${({ settled: "Recibido", held: "En garantía", released: "Liberado", refunded: "Reembolsado", disputed: "En disputa", resolved: "Resuelto" } as Record<string, string>)[payment.status] ?? payment.status}</dd><dt>Red</dt><dd>Stellar ${d.network}</dd>
 <dt>Transacción</dt><dd><a href="${explorerTx(d, payment.txHash)}">${payment.txHash}</a></dd></dl>
 <p><button onclick="print()">Imprimir / Guardar PDF</button></p></body></html>`);
   })

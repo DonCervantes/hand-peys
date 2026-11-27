@@ -4,7 +4,7 @@ import { cn } from "../lib/format";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 const variants: Record<Variant, string> = {
-  primary: "bg-rosa text-white hover:bg-rosa-dark shadow-[0_3px_0_0_var(--color-rosa-dark)] active:translate-y-[2px] active:shadow-none",
+  primary: "bg-tinta text-white hover:bg-black shadow-[0_3px_0_0_var(--color-oro)] active:translate-y-[2px] active:shadow-none",
   secondary: "bg-white text-tinta border border-linea hover:border-tinta/30",
   ghost: "text-tinta hover:bg-black/5",
   danger: "bg-white text-red-700 border border-red-200 hover:bg-red-50",
@@ -38,7 +38,7 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
   <input
     ref={ref}
     className={cn(
-      "h-11 w-full rounded-xl border border-linea bg-white px-3 text-base outline-none transition focus:border-rosa focus:ring-2 focus:ring-rosa/20",
+      "h-11 w-full rounded-xl border border-linea bg-white px-3 text-base outline-none transition focus:border-tinta focus:ring-2 focus:ring-oro/30",
       className
     )}
     {...rest}
@@ -48,7 +48,7 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
 export function Select({ className, ...rest }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select
-      className={cn("h-11 w-full rounded-xl border border-linea bg-white px-3 text-base outline-none focus:border-rosa", className)}
+      className={cn("h-11 w-full rounded-xl border border-linea bg-white px-3 text-base outline-none focus:border-tinta", className)}
       {...rest}
     />
   );

@@ -35,7 +35,7 @@ function RouteError({ error }: { error: unknown }) {
     <div className="mx-auto max-w-md px-4 py-16 text-center">
       <p className="text-2xl font-extrabold">Algo falló en esta página</p>
       <pre className="mt-4 overflow-auto rounded-xl bg-black/5 p-3 text-left text-xs">{error instanceof Error ? error.message : String(error)}</pre>
-      <button className="mt-4 rounded-xl bg-rosa px-4 py-2 font-semibold text-white" onClick={() => location.reload()}>
+      <button className="mt-4 rounded-xl bg-tinta px-4 py-2 font-semibold text-white" onClick={() => location.reload()}>
         Recargar
       </button>
     </div>

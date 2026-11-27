@@ -20,7 +20,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { error: E
           incógnito.
         </p>
         <pre className="mt-4 overflow-auto rounded-xl bg-black/5 p-3 text-left text-xs">{this.state.error.message}</pre>
-        <button className="mt-4 rounded-xl bg-rosa px-4 py-2 font-semibold text-white" onClick={() => location.reload()}>
+        <button className="mt-4 rounded-xl bg-tinta px-4 py-2 font-semibold text-white" onClick={() => location.reload()}>
           Recargar
         </button>
       </div>

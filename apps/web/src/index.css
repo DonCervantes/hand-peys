@@ -1,17 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-rosa: #e4007c;
-  --color-rosa-dark: #b80064;
-  --color-rosa-soft: #ffe3f1;
-  --color-nopal: #0f7b5f;
-  --color-nopal-soft: #dff5ec;
-  --color-maiz: #f6b31b;
-  --color-crema: #fff8f0;
-  --color-tinta: #1d1a24;
-  --color-gris: #6b6575;
-  --color-linea: #ece4da;
-  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  /* Paleta de marca (logo handle): negro, arena y blanco */
+  --color-tinta: #212121;
+  --color-oro: #c4a47a;
+  --color-oro-dark: #7a5f3a; /* texto sobre blanco (contraste AA) */
+  --color-oro-soft: #f3ede3;
+  --color-crema: #f8f7f4;
+  --color-gris: #6e6a64;
+  --color-linea: #e8e4dd;
+  /* Estados, en tonos sobrios que combinan con la paleta */
+  --color-nopal: #3d6b4f;
+  --color-nopal-soft: #e8efe9;
+  --color-maiz: #c4a47a;
+  --font-display: "Jost", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -31,7 +33,7 @@ h3 {
 }
 
 .papel-picado {
-  background-image: radial-gradient(circle at 10px 0, transparent 9px, var(--color-rosa) 10px);
+  background-image: radial-gradient(circle at 10px 0, transparent 9px, var(--color-oro) 10px);
   background-size: 20px 12px;
   background-repeat: repeat-x;
   height: 12px;

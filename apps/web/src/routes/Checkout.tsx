@@ -85,7 +85,7 @@ export function Checkout() {
         <p className="mt-1 text-xs text-gris">en {ASSETS[l.asset].label.toLowerCase()}</p>
         {l.mode === "escrow" && (
           <p className="mt-4 flex items-start gap-2 rounded-xl bg-crema p-3 text-sm">
-            <Lock className="mt-0.5 size-4 shrink-0 text-rosa" />
+            <Lock className="mt-0.5 size-4 shrink-0 text-oro-dark" />
             Pago con garantía: tu dinero queda apartado hasta que confirmes que recibiste tu pedido.
           </p>
         )}
@@ -113,7 +113,7 @@ export function Checkout() {
                 </div>
               )}
               <ErrorNote>{escrow.error}</ErrorNote>
-              <a href={`/api/p/${id}/receipt`} target="_blank" rel="noreferrer" className="block text-center text-sm font-semibold text-rosa underline">
+              <a href={`/api/p/${id}/receipt`} target="_blank" rel="noreferrer" className="block text-center text-sm font-semibold text-oro-dark underline">
                 Descargar comprobante
               </a>
               {!l.chain.demo && (

@@ -62,7 +62,7 @@ function DashboardInner({ merchant }: { merchant: Merchant }) {
               <Users className="size-4" /> Equipo
             </Link>
           )}
-          <Link to="/app/cobrar" className="inline-flex h-10 items-center gap-2 rounded-xl bg-rosa px-4 text-sm font-semibold text-white">
+          <Link to="/app/cobrar" className="inline-flex h-10 items-center gap-2 rounded-xl bg-tinta px-4 text-sm font-semibold text-white">
             <Plus className="size-4" /> Nuevo cobro
           </Link>
         </div>
@@ -98,7 +98,7 @@ function DashboardInner({ merchant }: { merchant: Merchant }) {
         <section>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-xl font-bold">Últimos cobros</h2>
-            <Link to="/app/cobros" className="flex items-center gap-1 text-sm font-semibold text-rosa">
+            <Link to="/app/cobros" className="flex items-center gap-1 text-sm font-semibold text-oro-dark">
               Ver todos <ArrowRight className="size-4" />
             </Link>
           </div>

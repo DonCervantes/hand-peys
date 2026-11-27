@@ -4,13 +4,14 @@ import type { ReactNode } from "react";
 import { useSession } from "../lib/session";
 import { useWallet } from "../lib/wallet";
 import { cn, shortAddr } from "../lib/format";
+import { BrandMark, Wordmark } from "./Brand";
 import { Button } from "./ui";
 
 export function Logo() {
   return (
-    <Link to="/" className="flex shrink-0 items-center gap-2 whitespace-nowrap font-display text-xl font-extrabold">
-      <span className="grid size-8 place-items-center rounded-lg bg-rosa text-crema">$</span>
-      Hand Peys
+    <Link to="/" aria-label="handle, ir al inicio" className="flex shrink-0 items-center gap-2.5 whitespace-nowrap text-tinta">
+      <BrandMark className="h-6 w-auto sm:h-7" />
+      <Wordmark className="text-[1.4rem] sm:text-[1.65rem]" />
     </Link>
   );
 }
@@ -27,7 +28,7 @@ export function LoginButton({ size = "md", children = "Entrar" }: { size?: "md" 
     );
   if (wallet.login)
     return (
-      <Link to="/app" className={cn("inline-flex items-center justify-center rounded-xl bg-rosa px-4 font-semibold text-white", size === "lg" ? "h-12 text-base" : "h-10 text-sm")}>
+      <Link to="/app" className={cn("inline-flex items-center justify-center rounded-xl bg-tinta px-4 font-semibold text-white", size === "lg" ? "h-12 text-base" : "h-10 text-sm")}>
         {children}
       </Link>
     );
@@ -42,7 +43,7 @@ function NavLink({ to, children }: { to: string; children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const active = path === to || (to !== "/app" && path.startsWith(to));
   return (
-    <Link to={to} className={cn("rounded-lg px-3 py-1.5 text-sm font-medium", active ? "bg-rosa-soft text-rosa-dark" : "text-gris hover:text-tinta")}>
+    <Link to={to} className={cn("rounded-lg px-3 py-1.5 text-sm font-medium", active ? "bg-oro-soft text-tinta" : "text-gris hover:text-tinta")}>
       {children}
     </Link>
   );
@@ -54,10 +55,10 @@ export function Header() {
   const role = me?.user.platformRole;
   return (
     <header className="sticky top-0 z-30 border-b border-linea bg-crema/90 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
         <Logo />
         {loggedIn ? (
-          <div className="flex items-center gap-1 overflow-x-auto">
+          <div className="flex items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {me?.merchants.length ? (
               <>
                 <NavLink to="/app">Inicio</NavLink>

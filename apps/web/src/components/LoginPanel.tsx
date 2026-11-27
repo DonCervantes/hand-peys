@@ -76,7 +76,7 @@ export function LoginPanel({ cta = "Entrar" }: { cta?: string }) {
           <button type="button" className="text-gris underline" onClick={() => { setCode(""); login.cancel(); }}>
             Cambiar correo
           </button>
-          <button type="button" className="font-semibold text-rosa underline" onClick={() => login.sendCode(login.email ?? email)}>
+          <button type="button" className="font-semibold text-oro-dark underline" onClick={() => login.sendCode(login.email ?? email)}>
             Reenviar código
           </button>
         </div>

@@ -61,7 +61,7 @@ function NewLinkForm({ merchant }: { merchant: Merchant }) {
         <label className="text-sm font-medium" htmlFor="amount">
           ¿Cuánto vas a cobrar?
         </label>
-        <div className="mt-2 flex items-center gap-2 rounded-2xl border border-linea bg-white px-4 focus-within:border-rosa">
+        <div className="mt-2 flex items-center gap-2 rounded-2xl border border-linea bg-white px-4 focus-within:border-tinta">
           <span className="font-display text-4xl font-extrabold text-gris">$</span>
           <input
             id="amount"
@@ -94,9 +94,9 @@ function NewLinkForm({ merchant }: { merchant: Merchant }) {
             type="button"
             key={v}
             onClick={() => setMode(v)}
-            className={cn("rounded-2xl border p-4 text-left transition", mode === v ? "border-rosa bg-rosa-soft" : "border-linea bg-white")}
+            className={cn("rounded-2xl border p-4 text-left transition", mode === v ? "border-tinta bg-oro-soft" : "border-linea bg-white")}
           >
-            <Icon className={cn("size-5", mode === v ? "text-rosa" : "text-gris")} />
+            <Icon className={cn("size-5", mode === v ? "text-oro-dark" : "text-gris")} />
             <p className="mt-2 font-semibold">{t}</p>
             <p className="text-xs text-gris">{d}</p>
           </button>

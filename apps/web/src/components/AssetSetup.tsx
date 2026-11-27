@@ -57,7 +57,7 @@ export function AssetSetup({ assets, role, need, children }: Props) {
 
   if (Object.values(statuses).some((s) => !s.exists)) {
     return box(
-      <WalletIcon className="size-4 text-rosa" />,
+      <WalletIcon className="size-4 text-oro-dark" />,
       "Activando tu wallet en la red…",
       <p className="text-sm text-gris">Esto tarda unos segundos la primera vez.</p>
     );
@@ -67,7 +67,7 @@ export function AssetSetup({ assets, role, need, children }: Props) {
   if (missing.length) {
     const labels = missing.map((a) => ASSETS[a].short.toLowerCase()).join(" y ");
     return box(
-      <ShieldCheck className="size-4 text-rosa" />,
+      <ShieldCheck className="size-4 text-oro-dark" />,
       role === "merchant" ? `Habilita ${labels} para recibir pagos` : `Habilita ${labels} en tu wallet`,
       <>
         <p className="text-sm text-gris">
@@ -91,7 +91,7 @@ export function AssetSetup({ assets, role, need, children }: Props) {
   if (need && statuses[need.asset]!.balance < need.units) {
     const testnet = config!.network === "testnet";
     return box(
-      <Coins className="size-4 text-rosa" />,
+      <Coins className="size-4 text-oro-dark" />,
       "No tienes saldo suficiente",
       <>
         <p className="text-sm text-gris">

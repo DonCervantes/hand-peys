@@ -86,7 +86,7 @@ function Kyc({ merchant }: { merchant: Merchant }) {
   return (
     <div className="space-y-5">
       <div className="flex items-start gap-3 rounded-xl bg-crema p-4">
-        <IdCard className="mt-0.5 size-6 shrink-0 text-rosa" />
+        <IdCard className="mt-0.5 size-6 shrink-0 text-oro-dark" />
         <p className="text-sm">
           Te pediremos tu <b>INE</b> y una <b>selfie</b>. Es una sola vez y tarda un par de minutos. Tus datos los procesa nuestro proveedor de identidad; nosotros solo
           guardamos que ya estás verificado.
@@ -120,12 +120,12 @@ export function Onboarding() {
           <Page>
             <div className="mx-auto max-w-md">
               <ol className="mb-6 flex gap-2 text-sm">
-                <li className={`flex-1 rounded-full py-1 text-center ${!m ? "bg-rosa text-white" : "bg-nopal-soft text-nopal"}`}>1. Tu negocio</li>
-                <li className={`flex-1 rounded-full py-1 text-center ${m ? "bg-rosa text-white" : "bg-black/5 text-gris"}`}>2. Verificación</li>
+                <li className={`flex-1 rounded-full py-1 text-center ${!m ? "bg-tinta text-white" : "bg-nopal-soft text-nopal"}`}>1. Tu negocio</li>
+                <li className={`flex-1 rounded-full py-1 text-center ${m ? "bg-tinta text-white" : "bg-black/5 text-gris"}`}>2. Verificación</li>
               </ol>
               <Card className="p-6">
                 <div className="mb-5 flex items-center gap-3">
-                  <Store className="size-7 text-rosa" />
+                  <Store className="size-7 text-oro-dark" />
                   <h1 className="text-2xl font-extrabold">{m ? `Verifica “${m.name}”` : "Registra tu negocio"}</h1>
                 </div>
                 {m ? <Kyc merchant={m} /> : <CreateMerchant />}

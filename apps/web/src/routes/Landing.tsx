@@ -20,7 +20,7 @@ function PhoneMock() {
       <div className="my-5 grid place-items-center rounded-2xl bg-crema p-4">
         <QrCode className="size-28 text-tinta" strokeWidth={1.2} />
       </div>
-      <div className="rounded-xl bg-rosa py-3 text-center font-semibold text-white">Pagar con Google</div>
+      <div className="rounded-xl bg-tinta py-3 text-center font-semibold text-white">Pagar con Google</div>
       <p className="mt-3 flex items-center justify-center gap-1 text-xs text-nopal">
         <ShieldCheck className="size-3.5" /> Comercio verificado
       </p>
@@ -64,7 +64,7 @@ function Calculator() {
         </div>
       </div>
       <p className="mt-4 text-center font-semibold">
-        Te ahorras <span className="text-rosa">{mxn(terminal - hp)}</span> en esta venta.
+        Te ahorras <span className="text-oro-dark">{mxn(terminal - hp)}</span> en esta venta.
       </p>
     </Card>
   );
@@ -89,20 +89,20 @@ export function Landing() {
       {/* Hero */}
       <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 pb-16 pt-12 md:grid-cols-2 md:pt-20">
         <div>
-          <span className="inline-flex items-center gap-2 rounded-full bg-rosa-soft px-3 py-1 text-sm font-semibold text-rosa-dark">
+          <span className="inline-flex items-center gap-2 rounded-full bg-oro-soft px-3 py-1 text-sm font-semibold text-tinta">
             🇲🇽 Hecho para changarros, freelancers y PyMEs
           </span>
           <h1 className="mt-5 text-5xl font-extrabold leading-[1.05] md:text-6xl">
             Cobra con un link.
             <br />
-            <span className="text-rosa">Recibe tu lana</span> en segundos.
+            <span className="text-oro-dark">Recibe tu lana</span> en segundos.
           </h1>
           <p className="mt-5 max-w-lg text-lg text-gris">
             Comparte un link o un QR por WhatsApp y recibe pesos digitales al instante. Sin terminal y con solo 0.9% de comisión. Al chile, sin letras chiquitas.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             {loggedIn ? (
-              <Link to="/app" className="inline-flex h-13 items-center gap-2 rounded-xl bg-rosa px-6 font-semibold text-white">
+              <Link to="/app" className="inline-flex h-13 items-center gap-2 rounded-xl bg-tinta px-6 font-semibold text-white">
                 Ir a mi changarro <ArrowRight className="size-4" />
               </Link>
             ) : (
@@ -139,7 +139,7 @@ export function Landing() {
               { icon: WalletIcon, t: "3. Te pagan en segundos", d: "Tu cliente paga con Google o su correo y la lana llega al momento." },
             ].map(({ icon: Icon, t, d }) => (
               <Card key={t} className="p-6">
-                <Icon className="size-8 text-rosa" />
+                <Icon className="size-8 text-oro-dark" />
                 <h3 className="mt-4 text-xl font-bold">{t}</h3>
                 <p className="mt-1 text-gris">{d}</p>
               </Card>
@@ -161,7 +161,7 @@ export function Landing() {
                 <th className="py-2"></th>
                 <th>Terminal</th>
                 <th>Transferencia</th>
-                <th className="text-rosa">Hand Peys</th>
+                <th className="text-oro-dark">Hand Peys</th>
               </tr>
             </thead>
             <tbody className="[&_td]:border-t [&_td]:border-linea [&_td]:py-2">
@@ -223,12 +223,12 @@ export function Landing() {
 
       {/* CTA */}
       <section className="px-4 pb-20">
-        <div className="mx-auto max-w-4xl rounded-3xl bg-rosa px-6 py-14 text-center text-white">
+        <div className="mx-auto max-w-4xl rounded-3xl bg-tinta px-6 py-14 text-center text-white">
           <h2 className="text-4xl font-extrabold">Tu primer cobro en 5 minutos</h2>
           <p className="mx-auto mt-3 max-w-xl text-white/85">Entra con Google, verifica tu identidad una vez y empieza a mandar links.</p>
           <div className="mt-8 flex justify-center">
             {loggedIn ? (
-              <Link to="/app/cobrar" className="inline-flex h-13 items-center rounded-xl bg-white px-6 font-semibold text-rosa">
+              <Link to="/app/cobrar" className="inline-flex h-13 items-center rounded-xl bg-white px-6 font-semibold text-oro-dark">
                 Crear un cobro
               </Link>
             ) : (
