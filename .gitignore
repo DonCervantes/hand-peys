@@ -12,3 +12,6 @@ target/
 .DS_Store
 contracts/**/test_snapshots/
 packages/stellar/src/generated/
+
+# Videos de demo (se generan con scripts/demo-video.mjs)
+demo/
