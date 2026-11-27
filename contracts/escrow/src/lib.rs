@@ -13,8 +13,8 @@ use soroban_sdk::{
 };
 
 const DAY_LEDGERS: u32 = 17_280;
-const TTL_THRESHOLD: u32 = 30 * DAY_LEDGERS;
-const TTL_EXTEND: u32 = 120 * DAY_LEDGERS;
+const TTL_THRESHOLD: u32 = 7 * DAY_LEDGERS;
+const TTL_EXTEND: u32 = 30 * DAY_LEDGERS;
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]

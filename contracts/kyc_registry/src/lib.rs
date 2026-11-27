@@ -11,8 +11,8 @@ use soroban_sdk::{
 };
 
 const DAY_LEDGERS: u32 = 17_280;
-const TTL_THRESHOLD: u32 = 30 * DAY_LEDGERS;
-const TTL_EXTEND: u32 = 180 * DAY_LEDGERS;
+const TTL_THRESHOLD: u32 = 7 * DAY_LEDGERS;
+const TTL_EXTEND: u32 = 30 * DAY_LEDGERS;
 
 pub const LEVEL_NONE: u32 = 0;
 pub const LEVEL_BASIC: u32 = 1;

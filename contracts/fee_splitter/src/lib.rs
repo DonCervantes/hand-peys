@@ -14,8 +14,8 @@ pub const MAX_FEE_BPS: u32 = 300;
 pub const BPS_DENOMINATOR: i128 = 10_000;
 
 const DAY_LEDGERS: u32 = 17_280;
-const TTL_THRESHOLD: u32 = 30 * DAY_LEDGERS;
-const TTL_EXTEND: u32 = 180 * DAY_LEDGERS;
+const TTL_THRESHOLD: u32 = 7 * DAY_LEDGERS;
+const TTL_EXTEND: u32 = 30 * DAY_LEDGERS;
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
