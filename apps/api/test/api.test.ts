@@ -143,6 +143,14 @@ describe("kyc automático de testnet", () => {
   });
 });
 
+describe("kyc manual", () => {
+  it("deja el comercio en revisión hasta que cumplimiento aprueba", async () => {
+    const env = makeEnv({ ENVIRONMENT: "mainnet", NETWORK: "mainnet", KYC_MANUAL: "true", POLLAR_SECRET: "x" });
+    const { getPollarKyc } = await import("../src/pollar");
+    expect((await getPollarKyc(env, "u1")).state).toBe("pending");
+  });
+});
+
 describe("faucet", () => {
   it("no existe sin FAUCET_SECRET ni fuera de testnet", async () => {
     const wallet = Keypair.random().publicKey();

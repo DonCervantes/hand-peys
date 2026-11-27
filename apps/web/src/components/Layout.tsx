@@ -1,9 +1,10 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { LogOut } from "lucide-react";
 import type { ReactNode } from "react";
-import { useSession } from "../lib/session";
+import { useConfig, useSession } from "../lib/session";
 import { useWallet } from "../lib/wallet";
 import { cn, shortAddr } from "../lib/format";
+import { getProfile } from "../lib/profile";
 import { BrandMark, Wordmark } from "./Brand";
 import { Button } from "./ui";
 
@@ -26,17 +27,11 @@ export function LoginButton({ size = "md", children = "Entrar" }: { size?: "md" 
         Confirmar con mi wallet
       </Button>
     );
-  if (wallet.login)
-    return (
+  return (
       <Link to="/app" className={cn("inline-flex items-center justify-center rounded-xl bg-tinta px-4 font-semibold text-white", size === "lg" ? "h-12 text-base" : "h-10 text-sm")}>
         {children}
       </Link>
     );
-  return (
-    <Button size={size} loading={loading} onClick={() => wallet.connect()}>
-      {children}
-    </Button>
-  );
 }
 
 function NavLink({ to, children }: { to: string; children: ReactNode }) {
@@ -50,6 +45,7 @@ function NavLink({ to, children }: { to: string; children: ReactNode }) {
 }
 
 export function Header() {
+  const { data: config } = useConfig();
   const { loggedIn, me, signOut } = useSession();
   const wallet = useWallet();
   const role = me?.user.platformRole;
@@ -69,7 +65,7 @@ export function Header() {
             {(role === "cumplimiento" || role === "super_admin") && <NavLink to="/admin/cumplimiento">Cumplimiento</NavLink>}
             {role === "super_admin" && <NavLink to="/admin">Admin</NavLink>}
             <span className="ml-2 hidden text-xs text-gris sm:inline" title={wallet.address ?? ""}>
-              {shortAddr(wallet.address)}
+              {getProfile()?.name ?? shortAddr(wallet.address)}
             </span>
             <Button variant="ghost" onClick={signOut} aria-label="Salir">
               <LogOut className="size-4" />
@@ -79,9 +75,9 @@ export function Header() {
           <LoginButton />
         )}
       </div>
-      {wallet.kind === "demo" && (
+      {config && config.network === "testnet" && (
         <div className="bg-maiz/25 px-4 py-1 text-center text-xs text-amber-900">
-          Modo demo: wallet de prueba en este navegador (sin Pollar). Configura VITE_POLLAR_API_KEY para usar Pollar.
+          {config.demo ? "Modo demo: los pagos se simulan." : "Entorno de prueba (Stellar testnet): los pagos usan pesos digitales de prueba."}
         </div>
       )}
     </header>

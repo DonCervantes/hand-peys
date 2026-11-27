@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { Deployment } from "@hand-peys/stellar";
 import { api, ApiError, tokenStore, type Me } from "./api";
+import { getProfile, setProfile } from "./profile";
 import { useWallet } from "./wallet";
 
 export type AppConfig = Deployment & { demo: boolean };
@@ -43,7 +44,8 @@ export function useSession() {
           promise: (async () => {
             const ch = await api<{ nonce: string; message: string }>("/auth/challenge", { body: { wallet: address } });
             const signature = await wallet.signMessage(ch.message);
-            const res = await api<{ token: string }>("/auth/session", { body: { wallet: address, nonce: ch.nonce, signature } });
+            const email = getProfile()?.email;
+            const res = await api<{ token: string }>("/auth/session", { body: { wallet: address, nonce: ch.nonce, signature, ...(email ? { email } : {}) } });
             tokenStore.set(res.token);
           })().finally(() => {
             if (inflight?.address === address) inflight = null;
@@ -80,6 +82,7 @@ export function useSession() {
     tokenStore.set(null);
     attempted.current = null;
     attemptedFor = null;
+    setProfile(null);
     wallet.disconnect();
     qc.clear();
   }, [wallet, qc]);

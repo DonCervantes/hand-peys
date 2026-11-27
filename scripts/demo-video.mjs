@@ -151,13 +151,13 @@ await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
 await wait(1200);
 
 // 3. Entrar y registrar el negocio
-await say("Doña Lupe entra con su correo o con Google. Sin terminal y sin frases semilla.");
+await say("Doña Lupe entra con su nombre y su correo. Sin terminal y sin frases semilla.");
 await wait(2500);
-await click(page.getByRole("button", { name: /Empieza a cobrar gratis/ }));
-const goApp = page.getByRole("link", { name: /Ir a mi changarro/ });
-await goApp.waitFor({ timeout: 15000 });
-await wait(800);
-await click(goApp);
+await click(page.getByRole("link", { name: /Empieza a cobrar gratis/ }));
+await page.getByPlaceholder("Tu nombre").waitFor({ timeout: 15000 });
+await type(page.getByPlaceholder("Tu nombre"), "Lupe Hernández");
+await type(page.getByPlaceholder("tu@correo.com"), "lupe@tamales.mx");
+await click(page.getByRole("button", { name: "Continuar" }));
 await page.waitForURL(/\/app\/registro/, { timeout: 15000 });
 await wait(800);
 await say("Registra su negocio en segundos.");
@@ -168,9 +168,15 @@ await click(page.getByRole("button", { name: "Continuar" }));
 
 // 4. Verificación
 await page.getByRole("button", { name: /Verificar mi identidad/ }).waitFor();
-await say("Verifica su identidad una sola vez. On-chain solo queda que ya está verificada.");
-await wait(2500);
+await say("Verifica su identidad una sola vez: INE y selfie. On-chain solo queda que ya está verificada.");
+await wait(1500);
 await click(page.getByRole("button", { name: /Verificar mi identidad/ }));
+await click(page.getByRole("button", { name: "Usar INE de ejemplo" }), 400);
+await wait(700);
+await click(page.getByRole("button", { name: "Continuar" }), 400);
+await click(page.getByRole("button", { name: "Usar selfie de ejemplo" }), 400);
+await wait(700);
+await click(page.getByRole("button", { name: /Verificar mi identidad/ }), 400);
 await page.getByText(/Comercio verificado/).waitFor({ timeout: 20000 });
 await say("Listo: su panel muestra cobros, comisiones y links activos.");
 await wait(4000);

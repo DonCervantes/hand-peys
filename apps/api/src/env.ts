@@ -26,6 +26,8 @@ export interface Env {
   COMPLIANCE_WALLETS?: string;
   /** Solo testnet: "true" aprueba el KYC nivel 1 sin Pollar (temporal). Ignorado en mainnet. */
   KYC_AUTO_APPROVE?: string;
+  /** "true": el KYC queda en revisión hasta que cumplimiento lo apruebe (mainnet sin Pollar). */
+  KYC_MANUAL?: string;
   /** Solo local: "true" simula pagos y KYC aunque haya contratos desplegados. */
   DEMO_MODE?: string;
 }

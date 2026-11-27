@@ -6,6 +6,7 @@ import { RequireLogin } from "../components/Guard";
 import { Page } from "../components/Layout";
 import { Button, Card, ErrorNote, Field, Input, Select } from "../components/ui";
 import { api, type Merchant } from "../lib/api";
+import { SimulatedKyc } from "../components/SimulatedKyc";
 import { useWallet } from "../lib/wallet";
 
 function CreateMerchant() {
@@ -55,6 +56,7 @@ function Kyc({ merchant }: { merchant: Merchant }) {
   const navigate = useNavigate();
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [simulating, setSimulating] = useState(false);
 
   async function sync() {
     setSyncing(true);
@@ -99,9 +101,19 @@ function Kyc({ merchant }: { merchant: Merchant }) {
       )}
       {merchant.kycStatus === "suspended" && <ErrorNote>Tu comercio está suspendido. Contacta a soporte.</ErrorNote>}
       <ErrorNote>{error}</ErrorNote>
-      <Button size="lg" className="w-full" loading={syncing} disabled={merchant.kycStatus === "suspended"} onClick={() => wallet.openKyc(sync)}>
-        <BadgeCheck className="size-5" /> Verificar mi identidad
-      </Button>
+      {simulating && merchant.kycStatus !== "pending" ? (
+        <SimulatedKyc onDone={sync} busy={syncing} />
+      ) : (
+        <Button
+          size="lg"
+          className="w-full"
+          loading={syncing}
+          disabled={merchant.kycStatus === "suspended"}
+          onClick={() => (wallet.kind === "demo" ? setSimulating(true) : wallet.openKyc(sync))}
+        >
+          <BadgeCheck className="size-5" /> Verificar mi identidad
+        </Button>
+      )}
       {merchant.kycStatus === "pending" && (
         <Button variant="secondary" className="w-full" onClick={sync} loading={syncing}>
           Ya terminé, revisar estado

@@ -48,6 +48,8 @@ async function pollarFetch<T>(env: Env, path: string, init?: RequestInit): Promi
 export async function getPollarKyc(env: Env, pollarId: string): Promise<PollarKyc> {
   if (devMode(env)) return { state: "approved", level: 1, reference: `dev-ref-${pollarId}` };
   if (testnetAutoKyc(env)) return { state: "approved", level: 1, reference: `testnet-auto-${pollarId}` };
+  // Revisión manual (mainnet sin KYC de Pollar): queda "en revisión" hasta que cumplimiento apruebe en /admin/cumplimiento.
+  if (env.KYC_MANUAL === "true") return { state: "pending", level: 0, reference: null };
   // TODO(HP-016): confirmar endpoint (equivalente de servidor a getKycStatus).
   const data = await pollarFetch<{ status: string; level?: number; verificationId?: string }>(
     env,

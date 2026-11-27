@@ -48,6 +48,8 @@
       "vars": {
         "ENVIRONMENT": "mainnet",
         "NETWORK": "mainnet",
+        // Sin KYC de Pollar: cumplimiento aprueba a mano en /admin/cumplimiento.
+        "KYC_MANUAL": "true",
         "APP_URL": "https://hand-peys-mainnet.cruzcervantesdanieladrianelias.workers.dev",
         "POLLAR_API_URL": "https://api.pollar.xyz",
         "KYC_LEVEL1_MONTHLY_LIMIT_MXN": "50000"

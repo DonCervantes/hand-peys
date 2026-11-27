@@ -2,19 +2,23 @@ import { Navigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import type { Me, Merchant } from "../lib/api";
 import { useSession } from "../lib/session";
+import { useWallet } from "../lib/wallet";
 import { Page } from "./Layout";
 import { LoginPanel } from "./LoginPanel";
 import { Card, Spinner } from "./ui";
 
 export function RequireLogin({ children }: { children: (me: Me) => ReactNode }) {
   const { me, loggedIn, loading } = useSession();
+  const wallet = useWallet();
   if (loading && !me) return <Spinner label="Entrando…" />;
   if (!loggedIn || !me)
     return (
       <Page>
         <Card className="mx-auto max-w-md space-y-4 p-8 text-center">
           <h1 className="text-2xl font-extrabold">Entra para continuar</h1>
-          <p className="text-gris">Usa Google o tu correo. No necesitas frases semilla ni nada raro.</p>
+          <p className="text-gris">
+            {wallet.login ? "Usa Google o tu correo." : "Escribe tu nombre y tu correo para empezar."} No necesitas frases semilla ni nada raro.
+          </p>
           <LoginPanel />
         </Card>
       </Page>

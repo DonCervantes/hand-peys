@@ -5,6 +5,7 @@
 import { useState, type FormEvent } from "react";
 import { Mail } from "lucide-react";
 import { useSession } from "../lib/session";
+import { setProfile } from "../lib/profile";
 import { useWallet } from "../lib/wallet";
 import { Button, ErrorNote, Input } from "./ui";
 
@@ -34,12 +35,27 @@ export function LoginPanel({ cta = "Entrar" }: { cta?: string }) {
     );
   }
 
-  // Wallet de prueba: un clic crea la wallet local.
+  // Sin Pollar: login simulado con nombre y correo; se crea una wallet para el usuario en este navegador.
   if (!wallet.login) {
+    const submitDemo = (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      const f = new FormData(e.currentTarget);
+      const n = String(f.get("name") ?? "").trim();
+      const m = String(f.get("email") ?? "").trim().toLowerCase();
+      if (n.length < 2 || !/^\S+@\S+\.\S+$/.test(m)) return;
+      setProfile({ name: n, email: m });
+      wallet.connect();
+    };
     return (
-      <Button size="lg" className="w-full" loading={session.loading} onClick={() => wallet.connect()}>
-        {cta}
-      </Button>
+      <form onSubmit={submitDemo} className="space-y-3 text-left">
+        <Input name="name" autoComplete="name" placeholder="Tu nombre" minLength={2} maxLength={60} required aria-label="Nombre" />
+        <Input name="email" type="email" autoComplete="email" placeholder="tu@correo.com" required aria-label="Correo electrónico" />
+        <Button type="submit" size="lg" className="w-full" loading={session.loading}>
+          {cta === "Entrar" ? "Continuar" : cta}
+        </Button>
+        <ErrorNote>{session.error}</ErrorNote>
+        <p className="text-center text-xs text-gris">Creamos una wallet para ti en este navegador. Sin frases semilla.</p>
+      </form>
     );
   }
 

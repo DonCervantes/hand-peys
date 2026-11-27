@@ -5,16 +5,22 @@ test("un changarro cobra $350 con un link", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: /Cobra con un link/ })).toBeVisible();
 
-  await page.getByRole("button", { name: "Entrar" }).click();
-  await page.goto("/app");
-  await expect(page).toHaveURL(/\/app\/registro/);
+  await page.getByRole("link", { name: "Entrar" }).first().click();
+  await page.getByPlaceholder("Tu nombre").fill("Lupe");
+  await page.getByPlaceholder("tu@correo.com").fill("lupe@example.com");
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await expect(page).toHaveURL(/\/app\/registro/, { timeout: 15_000 });
 
   await page.getByPlaceholder("Tamales Doña Lupe").fill("Tamales E2E");
   await page.getByPlaceholder("Coyoacán, CDMX").fill("Coyoacán");
   await page.getByRole("button", { name: "Continuar" }).click();
 
   await page.getByRole("button", { name: /Verificar mi identidad/ }).click();
-  await expect(page.getByText(/Comercio verificado/)).toBeVisible({ timeout: 15_000 });
+  await page.getByRole("button", { name: "Usar INE de ejemplo" }).click();
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await page.getByRole("button", { name: "Usar selfie de ejemplo" }).click();
+  await page.getByRole("button", { name: /Verificar mi identidad/ }).click();
+  await expect(page.getByText(/Comercio verificado/)).toBeVisible({ timeout: 20_000 });
 
   await page.goto("/app/cobrar");
   await page.getByPlaceholder("350").fill("350");
