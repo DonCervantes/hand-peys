@@ -1,12 +1,13 @@
-/** Todos los activos (MXNe, USDC) usan 7 decimales en Stellar. */
+/** Todos los activos (MXNe, USDC, XLM) usan 7 decimales en Stellar. */
 export const STELLAR_DECIMALS = 7;
 const SCALE = 10n ** BigInt(STELLAR_DECIMALS);
 
-export type AssetCode = "MXNE" | "USDC";
+export type AssetCode = "MXNE" | "USDC" | "XLM";
 
-export const ASSETS: Record<AssetCode, { label: string; short: string; symbol: string; currency: "MXN" | "USD" }> = {
+export const ASSETS: Record<AssetCode, { label: string; short: string; symbol: string; currency: "MXN" | "USD" | "XLM" }> = {
   MXNE: { label: "Pesos digitales (MXNe)", short: "Pesos", symbol: "$", currency: "MXN" },
   USDC: { label: "Dólares digitales (USDC)", short: "Dólares", symbol: "US$", currency: "USD" },
+  XLM: { label: "Lumens (XLM)", short: "XLM", symbol: "", currency: "XLM" },
 };
 
 /** "350.5" → 3505000000n (unidades mínimas). Rechaza más de 7 decimales. */

@@ -31,6 +31,7 @@ if (network === "mainnet" && !args["i-know-this-is-mainnet"]) {
 for (const a of Object.values(net.assets)) {
   if (a.issuer.startsWith("TODO")) throw new Error(`Emisor sin verificar para ${a.code} (HP-038)`);
 }
+// Llaves de admin, cumplimiento y tesorería pueden ser alias de `stellar keys` o direcciones G...
 
 const admin = addrOf(source);
 const compliance = args.compliance ?? admin;
@@ -44,6 +45,11 @@ const invoke = (id, fn, params) => sh(`stellar contract invoke --id ${id} ${comm
 // Tokens (SAC)
 const tokens = {};
 for (const [key, a] of Object.entries(net.assets)) {
+  if (a.issuer === "native") {
+    // El SAC de XLM ya existe en cada red; solo obtenemos su id.
+    tokens[key] = { asset: "native", contractId: sh(`stellar contract id asset --asset native --network ${network}`), decimals: a.decimals };
+    continue;
+  }
   const issuer = a.issuer === "DEPLOYER" ? admin : a.issuer;
   const asset = `${a.code}:${issuer}`;
   let id;

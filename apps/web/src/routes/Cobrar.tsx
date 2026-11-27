@@ -19,7 +19,12 @@ function NewLinkForm({ merchant }: { merchant: Merchant }) {
   const qc = useQueryClient();
   const tx = useContractTx("payment_link");
   const [amount, setAmount] = useState("");
-  const [asset, setAsset] = useState<AssetCode>("MXNE");
+  const { data: config } = useConfig();
+  // Activos disponibles en esta red (testnet: MXNe/USDC; mainnet: XLM). En modo demo, los de testnet.
+  const available = (Object.keys(config?.tokens ?? {}) as AssetCode[]).filter((a) => config?.tokens[a]?.contractId || config?.demo);
+  const choices: AssetCode[] = available.length ? available : ["MXNE", "USDC"];
+  const [picked, setAsset] = useState<AssetCode | null>(null);
+  const asset: AssetCode = picked && choices.includes(picked) ? picked : choices[0]!;
   const [mode, setMode] = useState<"direct" | "escrow">("direct");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,8 +79,11 @@ function NewLinkForm({ merchant }: { merchant: Merchant }) {
             className="h-20 w-full bg-transparent font-display text-5xl font-extrabold outline-none"
           />
           <Select value={asset} onChange={(e) => setAsset(e.target.value as AssetCode)} className="w-28 border-0 font-semibold" aria-label="Moneda">
-            <option value="MXNE">MXN</option>
-            <option value="USDC">USD</option>
+            {choices.map((a) => (
+              <option key={a} value={a}>
+                {{ MXNE: "MXN", USDC: "USD", XLM: "XLM" }[a]}
+              </option>
+            ))}
           </Select>
         </div>
         {fee && <p className="mt-1 text-xs text-gris">Comisión Hand Peys (0.9%): {fee}</p>}

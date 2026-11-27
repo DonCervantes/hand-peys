@@ -89,6 +89,7 @@ export const merchantRoutes = new Hono<AppEnv>()
 
     const d = getDeployment(c.env.NETWORK);
     const demo = isDemo(c.env);
+    if (!demo && !d.tokens[input.asset]?.contractId) return c.json({ error: "Ese activo no está disponible en esta red" }, 400);
     const id = newLinkId();
     const expiresAt = input.expiresInHours ? Math.floor(Date.now() / 1000) + input.expiresInHours * 3600 : 0;
     const amountUnits = toUnits(input.amount).toString();

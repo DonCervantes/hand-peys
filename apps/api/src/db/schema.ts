@@ -52,7 +52,7 @@ export const links = sqliteTable("links", {
   merchantId: text("merchant_id").notNull(),
   createdBy: text("created_by").notNull(),
   amountUnits: text("amount_units").notNull(),
-  asset: text("asset", { enum: ["MXNE", "USDC"] }).notNull(),
+  asset: text("asset", { enum: ["MXNE", "USDC", "XLM"] }).notNull(),
   description: text("description").notNull(),
   mode: text("mode", { enum: ["direct", "escrow"] }).notNull(),
   expiresAt: integer("expires_at").notNull().default(0),

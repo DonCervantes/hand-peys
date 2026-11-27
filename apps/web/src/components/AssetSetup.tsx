@@ -56,6 +56,21 @@ export function AssetSetup({ assets, role, need, children }: Props) {
   );
 
   if (Object.values(statuses).some((s) => !s.exists)) {
+    if (config!.network === "mainnet")
+      return box(
+        <WalletIcon className="size-4 text-oro-dark" />,
+        "Activa tu wallet con XLM",
+        <>
+          <p className="text-sm text-gris">
+            Envía al menos <b className="text-tinta">3 XLM</b> a tu wallet desde tu exchange o wallet. Esto la activa en la red Stellar y cubre las comisiones de red.
+          </p>
+          <p className="break-all rounded-lg bg-white p-2 font-mono text-xs ring-1 ring-linea">{address}</p>
+          <Button variant="secondary" className="w-full" onClick={() => void navigator.clipboard?.writeText(address!)}>
+            Copiar dirección
+          </Button>
+          <p className="text-xs text-gris">Esta pantalla se actualiza sola cuando lleguen los XLM.</p>
+        </>
+      );
     return box(
       <WalletIcon className="size-4 text-oro-dark" />,
       "Activando tu wallet en la red…",
@@ -125,13 +140,18 @@ export function AssetSetup({ assets, role, need, children }: Props) {
   return <>{children}</>;
 }
 
-/** Para el dueño del comercio: habilita MXNe y USDC en su wallet para poder recibir. */
+/** Para el dueño del comercio: habilita los activos de esta red que requieren trustline (XLM no la necesita). */
 export function ReceiveSetup({ merchantWallet }: { merchantWallet: string }) {
   const wallet = useWallet();
-  if (wallet.address !== merchantWallet) return null;
+  const { data: config } = useConfig();
+  const available = (Object.keys(config?.tokens ?? {}) as AssetCode[]).filter((a) => config?.tokens[a]?.contractId);
+  const withTrust = available.filter((a) => a !== "XLM");
+  // Sin trustlines (XLM) igual verificamos que la wallet exista en la red.
+  const assets = withTrust.length ? withTrust : available.slice(0, 1);
+  if (wallet.address !== merchantWallet || !assets.length) return null;
   return (
     <div className="mb-4 empty:hidden">
-      <AssetSetup role="merchant" assets={["MXNE", "USDC"]} />
+      <AssetSetup role="merchant" assets={assets} />
     </div>
   );
 }

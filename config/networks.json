@@ -5,8 +5,18 @@
     "networkPassphrase": "Test SDF Network ; September 2015",
     "explorer": "https://stellar.expert/explorer/testnet",
     "assets": {
-      "MXNE": { "code": "MXNe", "issuer": "DEPLOYER", "decimals": 7, "note": "Activo de prueba emitido por la cuenta deployer" },
-      "USDC": { "code": "USDC", "issuer": "DEPLOYER", "decimals": 7, "note": "Activo de prueba emitido por la cuenta deployer" }
+      "MXNE": {
+        "code": "MXNe",
+        "issuer": "DEPLOYER",
+        "decimals": 7,
+        "note": "Activo de prueba emitido por la cuenta deployer"
+      },
+      "USDC": {
+        "code": "USDC",
+        "issuer": "DEPLOYER",
+        "decimals": 7,
+        "note": "Activo de prueba emitido por la cuenta deployer"
+      }
     }
   },
   "mainnet": {
@@ -15,8 +25,12 @@
     "networkPassphrase": "Public Global Stellar Network ; September 2015",
     "explorer": "https://stellar.expert/explorer/public",
     "assets": {
-      "MXNE": { "code": "MXNe", "issuer": "TODO_VERIFICAR_HP_038", "decimals": 7, "note": "Emisor oficial de Etherfuse: verificar en stellar.toml de etherfuse.com antes del deploy" },
-      "USDC": { "code": "USDC", "issuer": "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN", "decimals": 7, "note": "Circle. Confirmar contra centre.io/.well-known/stellar.toml (HP-038)" }
+      "XLM": {
+        "code": "XLM",
+        "issuer": "native",
+        "decimals": 7,
+        "note": "XLM nativo (SAC nativo de Stellar). MXNe y USDC de mainnet quedan pendientes de verificar emisor."
+      }
     }
   },
   "params": {

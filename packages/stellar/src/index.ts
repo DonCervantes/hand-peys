@@ -29,8 +29,8 @@ export interface Deployment {
   networkPassphrase: string;
   explorer: string;
   contracts: { kyc_registry: string; fee_splitter: string; payment_link: string; escrow: string };
-  /** asset = "CODE:ISSUER" del activo clásico detrás del SAC. */
-  tokens: Record<AssetCode, { contractId: string; asset: string }>;
+  /** asset = "CODE:ISSUER" del activo clásico detrás del SAC, o "native" para XLM. Cada red tiene sus activos. */
+  tokens: Partial<Record<AssetCode, { contractId: string; asset: string }>>;
 }
 
 export const MODE = { direct: 0, escrow: 1 } as const;
@@ -69,6 +69,13 @@ export async function buildInvoke(
   return (await s.prepareTransaction(tx)) as Transaction;
 }
 
+/** Token de un activo en esta red (error claro si la red no lo tiene). */
+export function tokenOf(d: Pick<Deployment, "tokens">, code: AssetCode) {
+  const t = d.tokens[code];
+  if (!t) throw new Error(`Este activo (${code}) no está disponible en esta red`);
+  return t;
+}
+
 export function buildCreateLink(
   d: Deployment,
   p: { merchant: string; id: string; asset: AssetCode; amount: bigint; mode: keyof typeof MODE; expiresAt: number }
@@ -76,7 +83,7 @@ export function buildCreateLink(
   return buildInvoke(d, p.merchant, d.contracts.payment_link, "create_link", [
     addr(p.merchant),
     linkIdToScVal(p.id),
-    addr(d.tokens[p.asset].contractId),
+    addr(tokenOf(d, p.asset).contractId),
     i128(p.amount),
     u32(MODE[p.mode]),
     u64(p.expiresAt),
@@ -134,7 +141,9 @@ export async function revokeKycServer(d: Deployment, complianceSecret: string, m
 // ---------------- Activos clásicos (trustlines) ----------------
 
 const classicAsset = (d: Pick<Deployment, "tokens">, code: AssetCode) => {
-  const [c, issuer] = d.tokens[code].asset.split(":");
+  const { asset } = tokenOf(d, code);
+  if (asset === "native") return Asset.native();
+  const [c, issuer] = asset.split(":");
   return new Asset(c!, issuer!);
 };
 
@@ -152,20 +161,38 @@ export async function getAssetStatus(d: Pick<Deployment, "horizonUrl" | "tokens"
   const res = await fetch(`${d.horizonUrl}/accounts/${account}`);
   if (res.status === 404) return { exists: false, trusted: false, balance: 0n };
   if (!res.ok) throw new Error(`Horizon ${res.status}`);
-  const acc = (await res.json()) as { balances: { asset_code?: string; asset_issuer?: string; balance: string }[] };
+  const acc = (await res.json()) as {
+    subentry_count?: number;
+    balances: { asset_type: string; asset_code?: string; asset_issuer?: string; balance: string; selling_liabilities?: string }[];
+  };
   const a = classicAsset(d, code);
+  if (a.isNative()) {
+    // XLM no necesita trustline; el saldo disponible descuenta la reserva mínima de la cuenta.
+    const nat = acc.balances.find((b) => b.asset_type === "native");
+    const reserve = toStroops(String((2 + (acc.subentry_count ?? 0)) * 0.5));
+    const free = toStroops(nat?.balance ?? "0") - reserve - toStroops(nat?.selling_liabilities ?? "0");
+    return { exists: true, trusted: true, balance: free > 0n ? free : 0n };
+  }
   if (a.getIssuer() === account) return { exists: true, trusted: true, balance: 0n };
   const line = acc.balances.find((b) => b.asset_code === a.getCode() && b.asset_issuer === a.getIssuer());
   if (!line) return { exists: true, trusted: false, balance: 0n };
-  const [int, frac = ""] = line.balance.split(".");
-  return { exists: true, trusted: true, balance: BigInt(int!) * 10_000_000n + BigInt(frac.padEnd(7, "0").slice(0, 7)) };
+  return { exists: true, trusted: true, balance: toStroops(line.balance) };
+}
+
+/** "1650.5000000" → 16505000000n */
+function toStroops(v: string): bigint {
+  const [int, frac = ""] = v.split(".");
+  return BigInt(int || "0") * 10_000_000n + BigInt(frac.padEnd(7, "0").slice(0, 7) || "0");
 }
 
 /** Tx clásica que agrega trustlines a los activos indicados (la firma la wallet). */
 export async function buildChangeTrust(d: Deployment, account: string, codes: AssetCode[]): Promise<Transaction> {
   const acc = await server(d).getAccount(account);
   const b = new TransactionBuilder(acc, { fee: BASE_FEE, networkPassphrase: d.networkPassphrase });
-  for (const c of codes) b.addOperation(Operation.changeTrust({ asset: classicAsset(d, c) }));
+  for (const c of codes) {
+    const asset = classicAsset(d, c);
+    if (!asset.isNative()) b.addOperation(Operation.changeTrust({ asset }));
+  }
   return b.setTimeout(120).build();
 }
 

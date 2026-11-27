@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const assetSchema = z.enum(["MXNE", "USDC"]);
+export const assetSchema = z.enum(["MXNE", "USDC", "XLM"]);
 export const linkModeSchema = z.enum(["direct", "escrow"]);
 
 /** Monto decimal como string, > 0, máx. 7 decimales y tope de 9,999,999. */

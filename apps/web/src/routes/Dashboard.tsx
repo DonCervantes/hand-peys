@@ -1,3 +1,4 @@
+import type { AssetCode } from "@hand-peys/shared";
 import { Link } from "@tanstack/react-router";
 import { ReceiveSetup } from "../components/AssetSetup";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -11,8 +12,8 @@ import { fecha, LINK_STATUS, money, PAYMENT_STATUS } from "../lib/format";
 import { useContractTx } from "../lib/tx";
 
 interface Summary {
-  totals: { asset: "MXNE" | "USDC"; count: number; gross: string; fees: string }[];
-  held: { asset: "MXNE" | "USDC"; amount: string }[];
+  totals: { asset: AssetCode; count: number; gross: string; fees: string }[];
+  held: { asset: AssetCode; amount: string }[];
   activeLinks: number;
   scope: "today" | "all";
 }
@@ -48,9 +49,13 @@ function DashboardInner({ merchant }: { merchant: Merchant }) {
   const owner = merchant.role === "comercio_owner";
 
   if (summary.isLoading) return <Spinner />;
-  const mxne = summary.data?.totals.find((t) => t.asset === "MXNE");
-  const usdc = summary.data?.totals.find((t) => t.asset === "USDC");
-  const heldMx = summary.data?.held.find((h) => h.asset === "MXNE");
+  // El activo principal es el que más cobros tiene (MXNe en testnet, XLM en mainnet).
+  const totals = [...(summary.data?.totals ?? [])].sort((a, b) => b.count - a.count);
+  const main = totals[0];
+  const mainAsset: AssetCode = main?.asset ?? "MXNE";
+  const others = totals.slice(1);
+  const held = summary.data?.held.find((h) => h.asset === mainAsset) ?? summary.data?.held[0];
+  const count = totals.reduce((n, t) => n + t.count, 0);
 
   return (
     <Page
@@ -77,16 +82,18 @@ function DashboardInner({ merchant }: { merchant: Merchant }) {
         <Card className="md:col-span-2 bg-tinta text-crema border-tinta">
           <p className="text-sm text-crema/70">{summary.data?.scope === "today" ? "Cobrado hoy" : "Cobrado (neto)"}</p>
           <p className="mt-1 font-display text-4xl font-extrabold">
-            {money(BigInt(mxne?.gross ?? 0) - BigInt(mxne?.fees ?? 0), "MXNE")}
+            {money(BigInt(main?.gross ?? 0) - BigInt(main?.fees ?? 0), mainAsset)}
           </p>
-          {usdc && <p className="mt-1 text-crema/80">+ {money(BigInt(usdc.gross) - BigInt(usdc.fees), "USDC")}</p>}
-          <p className="mt-2 text-xs text-crema/60">{(mxne?.count ?? 0) + (usdc?.count ?? 0)} cobros · comisión {money(mxne?.fees ?? "0")}</p>
+          {others.map((o) => (
+            <p key={o.asset} className="mt-1 text-crema/80">+ {money(BigInt(o.gross) - BigInt(o.fees), o.asset)}</p>
+          ))}
+          <p className="mt-2 text-xs text-crema/60">{count} cobros · comisión {money(main?.fees ?? "0", mainAsset)}</p>
         </Card>
         <Card>
           <p className="flex items-center gap-1 text-sm text-gris">
             <Lock className="size-3.5" /> En garantía
           </p>
-          <p className="mt-1 text-2xl font-bold">{money(heldMx?.amount ?? "0")}</p>
+          <p className="mt-1 text-2xl font-bold">{money(held?.amount ?? "0", held?.asset ?? mainAsset)}</p>
         </Card>
         <Card>
           <p className="text-sm text-gris">Links activos</p>
