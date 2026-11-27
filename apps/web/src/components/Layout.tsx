@@ -25,6 +25,12 @@ export function LoginButton({ size = "md", children = "Entrar" }: { size?: "md" 
         Confirmar con mi wallet
       </Button>
     );
+  if (wallet.login)
+    return (
+      <Link to="/app" className={cn("inline-flex items-center justify-center rounded-xl bg-rosa px-4 font-semibold text-white", size === "lg" ? "h-12 text-base" : "h-10 text-sm")}>
+        {children}
+      </Link>
+    );
   return (
     <Button size={size} loading={loading} onClick={() => wallet.connect()}>
       {children}

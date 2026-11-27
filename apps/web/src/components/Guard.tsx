@@ -2,20 +2,20 @@ import { Navigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import type { Me, Merchant } from "../lib/api";
 import { useSession } from "../lib/session";
-import { LoginButton, Page } from "./Layout";
-import { Card, ErrorNote, Spinner } from "./ui";
+import { Page } from "./Layout";
+import { LoginPanel } from "./LoginPanel";
+import { Card, Spinner } from "./ui";
 
 export function RequireLogin({ children }: { children: (me: Me) => ReactNode }) {
-  const { me, loggedIn, loading, error } = useSession();
-  if (loading) return <Spinner label="Entrando…" />;
+  const { me, loggedIn, loading } = useSession();
+  if (loading && !me) return <Spinner label="Entrando…" />;
   if (!loggedIn || !me)
     return (
       <Page>
         <Card className="mx-auto max-w-md space-y-4 p-8 text-center">
           <h1 className="text-2xl font-extrabold">Entra para continuar</h1>
           <p className="text-gris">Usa Google o tu correo. No necesitas frases semilla ni nada raro.</p>
-          <ErrorNote>{error}</ErrorNote>
-          <LoginButton size="lg" />
+          <LoginPanel />
         </Card>
       </Page>
     );

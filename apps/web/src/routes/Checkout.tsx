@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ASSETS } from "@hand-peys/shared";
 import { buildEscrow, buildPay, type EscrowAction } from "@hand-peys/stellar";
 import { AssetSetup } from "../components/AssetSetup";
+import { LoginPanel } from "../components/LoginPanel";
 import { Logo } from "../components/Layout";
 import { Button, Card, ErrorNote, Spinner } from "../components/ui";
 import { api, type PublicLink } from "../lib/api";
@@ -132,9 +133,10 @@ export function Checkout() {
                 </p>
               </AssetSetup>
             ) : (
-              <Button size="lg" className="w-full" onClick={() => wallet.connect()}>
-                Pagar con Google o correo
-              </Button>
+              <div className="space-y-2">
+                <p className="text-center text-sm font-semibold">Entra para pagar</p>
+                <LoginPanel cta="Pagar con mi wallet" />
+              </div>
             )
           ) : (
             <p className="flex items-center justify-center gap-2 rounded-xl bg-black/5 p-4 text-gris">
