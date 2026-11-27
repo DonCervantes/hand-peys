@@ -5,6 +5,32 @@
 
 ## Dónde nos quedamos
 
+**v1.0.0 publicada** (27 nov 2026): app en testnet, README con demo y release en GitHub. **Siguiente paso: mainnet.**
+
+### Mainnet: listo para desplegar (falta fondear)
+- **Activo de cobro:** XLM nativo (decisión del usuario; sin trustlines ni compras). `config/networks.json` → mainnet solo tiene XLM. MXNe y USDC de mainnet quedan pendientes de verificar emisor.
+- **Llaves** (en `stellar keys`, las secretas no salen de la máquina):
+  - `hp-main-deployer` = `GCFA32F4TT3LQVL52T4SYKEYDQBBLMV4MSLVLYC2J3GIHK4IYLBWDQJP` (admin y tesorería). **Sin fondos todavía.**
+  - `hp-main-compliance` = `GDCLNXX2KDHE75ZEYXYTSS3KBEUEAZU6S33VAE5CA7ZP2TSWXMJLNZRH` (firma KYC). El usuario autorizó crearla con **3 XLM** del deployer.
+- **Costo estimado:** unos 21 XLM. Pedir **25–30 XLM** al deployer. El TTL de los contratos bajó a 30 días: un `init` cuesta 2.4–4.6 XLM en lugar de 11–14.
+- **Cloudflare mainnet:** D1 `hand-peys-db-mainnet` (`5e9c1c14-7020-4118-bcc3-f4e7cae91d98`) y KV (`1eadee27091a4122962022e1a660c5f7`) creados, con migraciones 0001 y 0002 aplicadas. `SESSION_SECRET` cargado. KYC manual (`KYC_MANUAL=true`).
+- **Pasos al recibir los fondos:**
+  1. Crear la cuenta de cumplimiento con 3 XLM: `stellar tx new create-account --source hp-main-deployer --destination <compliance> --starting-balance 3 --network mainnet`.
+  2. `node scripts/deploy-contracts.mjs --network mainnet --source hp-main-deployer --compliance <compliance> --treasury <deployer> --i-know-this-is-mainnet true`.
+  3. `cd apps/api; npx wrangler secret put COMPLIANCE_SIGNER_SECRET --env mainnet` (llave `hp-main-compliance`) y poner la wallet del usuario en `COMPLIANCE_WALLETS` (env mainnet).
+  4. `pnpm --filter @hand-peys/web build:mainnet` y `npx wrangler deploy --env mainnet`. Luego volver a compilar la web de testnet antes de desplegar testnet, porque comparten `apps/web/dist`.
+  5. El usuario fondea con unos 3 XLM su wallet de comercio y una de cliente (la app muestra la dirección). Cumplimiento aprueba el KYC en `/admin/cumplimiento`.
+- **Misión "lanza en mainnet"** (vencía el 27 nov a las 21:00): hacer desde la app una transacción de cada función y documentarla en `docs/MAINNET.md` con links de stellar.expert (public), pantalla y archivo:línea:
+
+  | Función | Pantalla | Archivo |
+  |---|---|---|
+  | `payment_link.create_link` | Nuevo cobro | `apps/web/src/routes/Cobrar.tsx:51` |
+  | `payment_link.pay` | Checkout | `apps/web/src/routes/Checkout.tsx:47` |
+  | `payment_link.cancel` | Detalle del link | `apps/web/src/routes/Cobrar.tsx:171` |
+  | `escrow.confirm` | Checkout con garantía | `apps/web/src/routes/Checkout.tsx:60` |
+  | `escrow.refund` | Cobros | `apps/web/src/routes/Cobros.tsx:19` |
+
+
 **Pollar quedó en pausa** (ticket [POLLAR-1](#ticket-pollar-1-el-login-desaparece-en-el-chrome-del-usuario)). Ahora trabajamos en la **UX/UI** del proyecto.
 
 - El sitio publicado volvió a la **wallet de prueba** (`pnpm --filter @hand-peys/web build`, sin la key de Pollar). Para reactivar Pollar: `pnpm --filter @hand-peys/web build:testnet` y `wrangler deploy`.
